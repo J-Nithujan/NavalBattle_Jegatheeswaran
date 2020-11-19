@@ -1,2 +1,6 @@
 # NavalBattle_Jegatheeswaran
-Ce dépôt  concerne un travail dans le cadre de mon CFC, il contient un projet bataille navale écrit en C
+* Il s'agit d'un jeu bataille navale lié à ma formation FPA (Formation Professionnelle Accéléré) d'Informaticien.
+* Version : 
+* 19.11.20 - Ouverture du dépôt
+
+###
