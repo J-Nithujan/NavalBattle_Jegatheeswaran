@@ -5,7 +5,7 @@
 
 ### Comment configuer une machine pour que le programme fonctionne ? ###
 
-* Il s'agit d'une simple application en C, en mode console. Aucune configuration spécifique n'est requise.
+* Il s'agit d'une simple application en C, qui se déroule en mode console. Aucune configuration spécifique n'est requise.
 
 ### À qui puis-je m'adresser ? ###
 
