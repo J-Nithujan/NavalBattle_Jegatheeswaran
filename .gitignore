@@ -53,4 +53,4 @@ dkms.conf
 
 # Specific repositories
 cmake-build-debug/
-.idea
+.idea/
