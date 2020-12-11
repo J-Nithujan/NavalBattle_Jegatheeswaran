@@ -1,4 +1,12 @@
-///Oublie pas les différents entêtes et les commms(à refaire)//
+/**
+ * \file      main.c
+ * \author    Nithujan Jegatheeswaran
+ * \version   0.1
+ * \date      11.12.20
+ * \brief     A battleship game ??????????????????????
+ *
+ * \details    This game is made to be played in Windows' command prompt
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +50,10 @@ int choice = 0;
 
 /**Fonctions**/
 
+/** \brief emptyBuffer - This function clears the memory used by the scanf function
+ * \return
+ *
+ */
 void emptyBuffer() {
     int c = 0;
     while (c != '\n' && c != EOF) {
@@ -69,6 +81,10 @@ void boat2End() {
 
 }
 
+/** \brief showHelp - This function explains the game to the user
+ * \return
+ *
+ */
 void showHelp() {
     do {
 
@@ -98,15 +114,19 @@ void showHelp() {
         emptyBuffer();
 
     } while (choice != 1);
-
 }
 
-///ATTENTION TOUCHER PLUSIEURS FOIS LA MÊME CASE D'UN BATEAU LUI ENLÈVE DE LA "VIE"
+///ATTENTION GLOBALISATION DES COORDONNÉES DES BATEAU
 
+/** \brief gameGridChanges - This function shows the result for the user's input entered in the game function
+ * \return void
+ *
+ */
 void gameGridChanges(char vertical, int horizontal) {
+    int trueVertical = vertical - 97;
+    int trueHorizontal = horizontal -1;
 
-
-    if (userInputs[vertical - 65][horizontal]) {
+    if (userInputs[vertical - 97][horizontal]) {
 
         userInputs[vertical - 65][horizontal] = 0;
 
@@ -395,17 +415,20 @@ void gameGridChanges(char vertical, int horizontal) {
     }
 }
 
-
+/** \brief game - This function
+ * \return
+ *
+ */
 void game() {
-    int horizontalHeader[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    char verticalHeader[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
+
     char selectedCoordinate[2] = "";
 
-
     do {
+        int horizontalHeader[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        char verticalHeader[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
+
         int horizontalCoordinate = 0;
         char verticalCoordinate = '0';
-
 
         printf("%4c", ' ');
 
@@ -432,14 +455,15 @@ void game() {
             printf("\n%4c\n", '>');
         }
 
+        printf("\n");
 
         do {
-            printf("Veuillez entrer une coordonnée vertical (A-J, en majuscule!):\n");
+            printf("Veuillez entrer une coordonnée vertical (a-j, en minuscule!):\n");
             scanf("%c", &verticalCoordinate);
 
             emptyBuffer();
 
-        } while (verticalCoordinate < 65 || verticalCoordinate > 90); //Use of the ASCII table 65 : A , 90 : Z
+        } while (verticalCoordinate < 97 || verticalCoordinate > 106); //I used the ASCII table 97:a, 106:j
 
         do {
 
@@ -450,10 +474,8 @@ void game() {
 
         } while (horizontalCoordinate < 1 || horizontalCoordinate > 10);
 
-        ///What happen if you enter the same position twice ???
-
         sprintf(selectedCoordinate, "%c%d", verticalCoordinate, horizontalCoordinate);
-        printf("Case choisie: %s\n", selectedCoordinate);
+        printf("\nCase choisie: %s\n", selectedCoordinate);
 
         gameGridChanges(verticalCoordinate, horizontalCoordinate);
 
@@ -466,6 +488,10 @@ void game() {
 
 
 /**Will be updated and used in v1.0*/
+/** \brief mainMenu - This function shows the main menu of the game and bring the user to the selected place
+ * \return void
+ *
+ */
 /*void mainMenu()
 {
     do {
@@ -507,7 +533,10 @@ void game() {
 
 
 
-
+/** \brief main - This function is the program's entry point
+ * \return an int different from 0 if abnormal termination
+ *
+ */
 int main() {
     SetConsoleOutputCP(CP_UTF8);
 
