@@ -3,9 +3,9 @@
  * \author    Nithujan Jegatheeswaran
  * \version   0.1
  * \date      11.12.20
- * \brief     A battleship game ??????????????????????
+ * \brief     A battleship game
  *
- * \details    This game is made to be played in Windows' command prompt
+ * \details    The game is made to be played in Windows' command prompt and has only one grid with ships' coordinates
  */
 
 #include <stdio.h>
@@ -17,41 +17,44 @@ int userInputs[10][10];
 char gameGrid[10][10];
 
 int allBoats = 5;
-int boat5[5][2] = {{3, 5/*-1*/}, ///!!!!!!!!!!!!!!!!
+int boat5[5][2] = {{3, 4},
+                   {3, 5},
                    {3, 6},
                    {3, 7},
-                   {3, 8},
-                   {3, 9}}; //D=3
+                   {3, 8}}; //D=3
 
-int boat4[4][2] = {{1, 2},
+int boat4[4][2] = {{1, 1},
+                   {1, 2},
                    {1, 3},
-                   {1, 4},
-                   {1, 5}}; //B=1
+                   {1, 4}}; //B=1
 
-int boat3_1[3][2] = {{4, 1},    //E=4
-                     {5, 1},    //F=5
-                     {6, 1}};   //G=6
+int boat31[3][2] = {{4, 0},    //E=4
+                    {5, 0},    //F=5
+                    {6, 0}};   //G=6
 
-int boat3_2[3][2] = {{7, 3},
-                     {7, 4},
-                     {7, 5}};   //H=7
+int boat32[3][2] = {{7, 2},
+                    {7, 3},
+                    {7, 4}};   //H=7
 
-int boat2[2][2] = {{6, 7},  //G=6
-                   {7, 7}}; //H=7
+int boat2[2][2] = {{6, 6},  //G=6
+                   {7, 6}}; //H=7
 
 int boat5Health = 4;
 int boat4Health = 3;
-int boat3_1Health = 2;
-int boat3_2Health = 2;
+int boat31Health = 2;
+int boat32Health = 2;
 int boat2Health = 1;
 
 int choice = 0;
 
+int score = 0;
+
+
 
 /**Fonctions**/
 
-/** \brief emptyBuffer - This function clears the memory used by the scanf function
- * \return
+/** \brief emptyBuffer - This function helps avoiding infinite loops in the scanf() function
+ * \return void
  *
  */
 void emptyBuffer() {
@@ -61,46 +64,29 @@ void emptyBuffer() {
     }
 }
 
-void boat5End() {
-    //Fonction made to sink boat5
-}
-
-void boat4End() {
-
-}
-
-void boat3_1End() {
-
-}
-
-void boat3_2End() {
-
-}
-
-void boat2End() {
-
-}
-
-/** \brief showHelp - This function explains the game to the user
- * \return
+/** \brief showHelp - This function displays the explanation of the game to the user
+ * \return void
  *
  */
-void showHelp() {
+void displayHelp() {
     do {
 
-        printf("===========\n"
-               "Aide de jeu\n"
-               "===========\n\n"
-               "Le but du jeu est de couler tous les bateaux.\n"
-               "Pour ce faire il faut tirer sur une des cases du tableau en indiquant une coordonnée.\n"
-               "Répétez cette opération jusqu'à ce que tous les bateaux soient coulées\n\n"
+        printf("/-----------\\\n"
+               " Aide de jeu\n"
+               "\\-----------/\n\n"
+               "Le but du jeu est de couler tous les navires cachés dans une grille.\n"
+               "Pour faire cela il faut tirer sur une des cases de la grille en indiquant une coordonnée.\n"
+               "Répétez cette opération jusqu'à ce que tous les navires soient coulés\n\n"
+               "Score:\n"
+               "------\n"
+               "Raté: -50pts | Touché: 100pts | Touché-coulé: 250pts | Déjà tiré: -75pts\n\n"
                "État des cases:\n"
                "---------------\n"
                "Case inconnue: ?\n"
                "Ratée: ~\n"
                "Touchée: X\n"
-               "Coulée: O\n"
-               "\n=====================\n"
+               "Coulée: O\n\n"
+               "=====================\n"
                "Lancer une partie (1)\n"
                "=====================\n");
 
@@ -108,7 +94,7 @@ void showHelp() {
 
 
         if (choice != 1) {
-            printf("UTILISEZ LA TOUCHE 1 POUR LANCER UNE PARTIE\n\n");
+            printf("\n/!\\ UTILISEZ LA TOUCHE 1 POUR LANCER UNE PARTIE /!\\\n\n");
         }
 
         emptyBuffer();
@@ -116,217 +102,212 @@ void showHelp() {
     } while (choice != 1);
 }
 
-///ATTENTION GLOBALISATION DES COORDONNÉES DES BATEAU
 
-/** \brief gameGridChanges - This function shows the result for the user's input entered in the game function
+/** \brief boatsEnd - This function changes the state of the grid when a ship is sunk
+ * \return void
+ *
+ */
+void boatsEnd(int boatNumber) {
+
+
+    printf("###############\n"
+           "TOUCHÉ, COULÉ !\n"
+           "###############\n\n");
+
+    switch (boatNumber) {
+        case 2:
+            for (int i = 0; i < 2; ++i) {
+                gameGrid[boat2[i][0]][boat2[i][1]] = 'O';
+            }
+            --allBoats;
+            score += 250;
+            break;
+
+        case 31:
+            for (int i = 0; i < 3; ++i) {
+                gameGrid[boat31[i][0]][boat31[i][1]] = 'O';
+            }
+            --allBoats;
+            score += 250;
+            break;
+
+        case 32:
+            for (int i = 0; i < 3; ++i) {
+                gameGrid[boat32[i][0]][boat32[i][1]] = 'O';
+            }
+            --allBoats;
+            score += 250;
+            break;
+
+        case 4:
+            for (int i = 0; i < 4; ++i) {
+                gameGrid[boat4[i][0]][boat4[i][1]] = 'O';
+            }
+            --allBoats;
+            score += 250;
+            break;
+
+        case 5:
+            for (int i = 0; i < 5; ++i) {
+                gameGrid[boat5[i][0]][boat5[i][1]] = 'O';
+            }
+            --allBoats;
+            score += 250;
+            break;
+
+        default:
+            printf("Ce navire n'existe pas !!!\n");
+    }
+}
+
+/** \brief gameGridChanges - This function makes the changes related to the user's input entered in the game() function
  * \return void
  *
  */
 void gameGridChanges(char vertical, int horizontal) {
-    int trueVertical = vertical - 97;
-    int trueHorizontal = horizontal -1;
+    int hit = 100;
+    int missed = -50;
+    int oldCoordinate = -75;
 
-    if (userInputs[vertical - 97][horizontal]) {
+    int verticalIndex = vertical - 97;
+    int horizontalIndex = horizontal - 1;
 
-        userInputs[vertical - 65][horizontal] = 0;
+    if (userInputs[verticalIndex][horizontalIndex]) {
 
-        switch (vertical) {
-            case 'B':
+        userInputs[verticalIndex][horizontalIndex] = 0;
 
+        switch (verticalIndex) {
+            case 1:
                 for (int i = 0; i < 4; ++i) {
-                    if (horizontal == boat4[i][1] && boat4Health != 0) {
-                        printf("========\n"
+                    if (horizontalIndex == boat4[i][1] && boat4Health != 0) {
+                        printf("########\n"
                                "TOUCHÉ !\n"
-                               "========\n\n");
+                               "########\n\n");
 
-                        gameGrid[(int) (vertical) - 65][horizontal - 1] = 'X';
+                        gameGrid[verticalIndex][horizontalIndex] = 'X';
                         --boat4Health;
-
+                        score += hit;
                         return;
 
-                    } else if (horizontal == boat4[i][1]) {
-                        printf("===============\n"
-                               "TOUCHÉ, COULÉ !\n"
-                               "===============\n\n");
-
-                        for (int j = boat4[0][1] - 1; j < boat4[3][1]; ++j) {
-                            gameGrid[1][j] = '0';
-                        }
-
-                        --allBoats;
-
+                    } else if (horizontalIndex == boat4[i][1]) {
+                        boatsEnd(4);
                         return;
                     }
                 }
 
-                printf("=======\n"
+                printf("#######\n"
                        "PLOUF !\n"
-                       "=======\n\n");
+                       "#######\n\n");
 
-                gameGrid[(int) (vertical) - 65][horizontal - 1] = '~';
-
+                gameGrid[verticalIndex][horizontalIndex] = '~';
                 break;
 
-            case 'D':
+            case 3:
 
                 for (int i = 0; i < 5; ++i) {
-                    if (horizontal == boat5[i][1] && boat5Health != 0) {
-                        printf("========\n"
+                    if (horizontalIndex == boat5[i][1] && boat5Health != 0) {
+                        printf("########\n"
                                "TOUCHÉ !\n"
-                               "========\n\n");
+                               "########\n\n");
 
-                        gameGrid[(int) (vertical) - 65][horizontal - 1] = 'X';
+                        gameGrid[verticalIndex][horizontalIndex] = 'X';
                         --boat5Health;
-
+                        score += hit;
                         return;
 
-                    } else if (horizontal == boat5[i][1]) {
-                        printf("===============\n"
-                               "TOUCHÉ, COULÉ !\n"
-                               "===============\n\n");
-
-                        /*boat5End();
-                        */
-                        gameGrid[3][4] = 'O';
-                        gameGrid[3][5] = 'O';
-                        gameGrid[3][6] = 'O';
-                        gameGrid[3][7] = 'O';
-                        gameGrid[3][8] = 'O';
-
-                        --allBoats;
-
+                    } else if (horizontalIndex == boat5[i][1]) {
+                        boatsEnd(5);
                         return;
                     }
                 }
 
-                printf("=======\n"
+                printf("#######\n"
                        "PLOUF !\n"
-                       "=======\n\n");
+                       "#######\n\n");
 
-                gameGrid[(int) (vertical) - 65][horizontal - 1] = '~';
-
+                gameGrid[verticalIndex][horizontalIndex] = '~';
+                score += missed;
                 break;
 
-            case 'E':
+            case 4:
 
-                if (horizontal == boat3_1[0][1] && boat3_1Health != 0) {
-                    printf("========\n"
+                if (horizontalIndex == boat31[0][1] && boat31Health != 0) {
+                    printf("########\n"
                            "TOUCHÉ !\n"
-                           "========\n\n");
+                           "########\n\n");
 
-                    gameGrid[(int) (vertical) - 65][horizontal - 1] = 'X';
-                    --boat3_1Health;
-
+                    gameGrid[verticalIndex][horizontalIndex] = 'X';
+                    --boat31Health;
+                    score += hit;
                     break;
 
-                } else if (horizontal == boat3_1[0][1]) {
-                    printf("===============\n"
-                           "TOUCHÉ, COULÉ !\n"
-                           "===============\n\n");
-
-                    for (int i = boat3_1[0][1] - 1; i < boat3_1[2][1]; ++i) {
-                        gameGrid[i][0] = '0';
-                    }
-                    /*
-                    gameGrid[4][0] = 'O';
-                    gameGrid[5][0] = 'O';
-                    gameGrid[6][0] = 'O';
-                    */
-                    --allBoats;
-
+                } else if (horizontalIndex == boat31[0][1]) {
+                    boatsEnd(31);
                     break;
                 }
 
-                printf("=======\n"
+                printf("#######\n"
                        "PLOUF !\n"
-                       "=======\n\n");
+                       "#######\n\n");
 
-                gameGrid[(int) (vertical) - 65][horizontal - 1] = '~';
-
+                gameGrid[verticalIndex][horizontalIndex] = '~';
+                score += missed;
                 break;
 
-            case 'F':
+            case 5:
 
-                if (horizontal == boat3_1[1][1] && boat3_1Health != 0) {
-                    printf("========\n"
+                if (horizontalIndex == boat31[1][1] && boat31Health != 0) {
+                    printf("########\n"
                            "TOUCHÉ !\n"
-                           "========\n\n");
+                           "########\n\n");
 
-                    gameGrid[(int) (vertical) - 65][horizontal - 1] = 'X';
-                    --boat3_1Health;
-
+                    gameGrid[verticalIndex][horizontalIndex] = 'X';
+                    --boat31Health;
+                    score += hit;
                     break;
 
-                } else if (horizontal == boat3_1[1][1]) {
-                    printf("===============\n"
-                           "TOUCHÉ, COULÉ !\n"
-                           "===============\n\n");
-
-                    for (int i = boat3_1[0][1] - 1; i < boat3_1[2][1]; ++i) {
-                        gameGrid[i][0] = '0';
-                    }
-                    gameGrid[4][0] = 'O';
-                    gameGrid[5][0] = 'O';
-                    gameGrid[6][0] = 'O';
-
-                    --allBoats;
-
+                } else if (horizontalIndex == boat31[1][1]) {
+                    boatsEnd(31);
                     break;
                 }
 
-                printf("=======\n"
+                printf("#######\n"
                        "PLOUF !\n"
-                       "=======\n\n");
+                       "#######\n\n");
 
-                gameGrid[(int) (vertical) - 65][horizontal - 1] = '~';
-
+                gameGrid[verticalIndex][horizontalIndex] = '~';
+                score += missed;
                 break;
 
-            case 'G':
+            case 6:
 
-                if (horizontal == boat3_1[2][1] && boat3_1Health != 0) {
-                    printf("=========\n"
+                if (horizontalIndex == boat31[2][1] && boat31Health != 0) {
+                    printf("########\n"
                            "TOUCHÉ !\n"
-                           "=========\n\n");
+                           "########\n\n");
 
-                    gameGrid[(int) (vertical) - 65][horizontal - 1] = 'X';
-                    --boat3_1Health;
-
+                    gameGrid[verticalIndex][horizontalIndex] = 'X';
+                    --boat31Health;
+                    score += hit;
                     break;
 
-                } else if (horizontal == boat3_1[2][1]) {
-                    printf("===============\n"
-                           "TOUCHÉ, COULÉ !\n"
-                           "===============\n\n");
-
-                    gameGrid[4][0] = 'O';
-                    gameGrid[5][0] = 'O';
-                    gameGrid[6][0] = 'O';
-
-                    --allBoats;
-
+                } else if (horizontalIndex == boat31[2][1]) {
+                    boatsEnd(31);
                     break;
                 }
 
-                if (horizontal == boat2[0][1] && boat2Health != 0) {
-                    printf("=========\n"
+                if (horizontalIndex == boat2[0][1] && boat2Health != 0) {
+                    printf("########\n"
                            "TOUCHÉ !\n"
-                           "=========\n\n");
+                           "########\n\n");
 
-                    gameGrid[(int) (vertical) - 65][horizontal - 1] = 'X';
+                    gameGrid[verticalIndex][horizontalIndex] = 'X';
                     --boat2Health;
-
+                    score += hit;
                     break;
 
-                } else if (horizontal == boat2[0][1]) {
-                    printf("===============\n"
-                           "TOUCHÉ, COULÉ !\n"
-                           "===============\n\n");
-
-                    gameGrid[6][6] = 'O';
-                    gameGrid[7][6] = 'O';
-
-                    --allBoats;
+                } else if (horizontalIndex == boat2[0][1]) {
+                    boatsEnd(2);
 
                     break;
                 }
@@ -335,94 +316,71 @@ void gameGridChanges(char vertical, int horizontal) {
                        "PLOUF !\n"
                        "=======\n\n");
 
-                gameGrid[(int) (vertical) - 65][horizontal - 1] = '~';
-
+                gameGrid[verticalIndex][horizontalIndex] = '~';
+                score += missed;
                 break;
 
-            case 'H':
+            case 7:
 
                 for (int i = 0; i < 3; ++i) {
-
-                    if (horizontal == boat3_2[i][1] && boat3_2Health != 0) {
-                        printf("=========\n"
+                    if (horizontalIndex == boat32[i][1] && boat32Health != 0) {
+                        printf("########\n"
                                "TOUCHÉ !\n"
-                               "=========\n\n");
+                               "########\n\n");
 
-                        gameGrid[(int) (vertical) - 65][horizontal - 1] = 'X';
-                        --boat3_2Health;
-
+                        gameGrid[verticalIndex][horizontalIndex] = 'X';
+                        --boat32Health;
+                        score += hit;
                         return;
 
-                    } else if (horizontal == boat3_2[i][1]) {
-                        printf("===============\n"
-                               "TOUCHÉ, COULÉ !\n"
-                               "===============\n\n");
-
-                        gameGrid[7][3] = 'O';
-                        gameGrid[7][4] = 'O';
-                        gameGrid[7][5] = 'O';
-
-                        --allBoats;
-
+                    } else if (horizontalIndex == boat32[i][1]) {
+                        boatsEnd(32);
                         return;
                     }
                 }
 
-
-                if (horizontal == boat2[1][1] && boat2Health != 0) {
-                    printf("=========\n"
+                if (horizontalIndex == boat2[1][1] && boat2Health != 0) {
+                    printf("########\n"
                            "TOUCHÉ !\n"
-                           "=========\n\n");
+                           "########\n\n");
 
-                    gameGrid[(int) (vertical) - 65][horizontal - 1] = 'X';
+                    gameGrid[verticalIndex][horizontalIndex] = 'X';
                     --boat2Health;
-
+                    score += hit;
                     break;
 
-                } else if (horizontal == boat2[1][1]) {
-                    printf("===============\n"
-                           "TOUCHÉ, COULÉ !\n"
-                           "===============\n\n");
-
-                    gameGrid[6][6] = 'O';
-                    gameGrid[7][6] = 'O';
-
-                    --allBoats;
-
+                } else if (horizontalIndex == boat2[1][1]) {
+                    boatsEnd(2);
                     break;
                 }
 
-                printf("=======\n"
+                printf("#######\n"
                        "PLOUF !\n"
-                       "=======\n\n");
+                       "#######\n\n");
 
-                gameGrid[(int) (vertical) - 65][horizontal - 1] = '~';
-
+                gameGrid[verticalIndex][horizontalIndex] = '~';
+                score += missed;
                 break;
 
             default:
-                printf("======\n"
+                printf("######\n"
                        "PLOUF!\n"
-                       "======\n\n");
+                       "######\n\n");
 
-                gameGrid[(int) (vertical) - 65][horizontal - 1] = '~';
-
+                gameGrid[verticalIndex][horizontalIndex] = '~';
+                score += missed;
         }
     } else {
-        printf("====================\n"
-               "CASE DÉJÀ ENTRÉE !!!\n"
-               "====================\n\n");
+        printf("/!\\ COORDONNÉE DÉJÀ ENTRÉE !!! /!\\\n\n");
+        score += oldCoordinate;
     }
 }
 
-/** \brief game - This function
- * \return
+/** \brief game - This function displays the battleship game's grid and wait for the user's inputs until he sunk all the boats
+ * \return void
  *
  */
 void game() {
-
-    char selectedCoordinate[2] = "";
-
     do {
         int horizontalHeader[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         char verticalHeader[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
@@ -455,15 +413,19 @@ void game() {
             printf("\n%4c\n", '>');
         }
 
-        printf("\n");
+        printf("\nScore: %d\n", score);
 
         do {
-            printf("Veuillez entrer une coordonnée vertical (a-j, en minuscule!):\n");
+            printf("Veuillez entrer une coordonnée vertical (a-j):\n");
             scanf("%c", &verticalCoordinate);
+
+            if (verticalCoordinate >= 65 && verticalCoordinate <= 74) {
+                verticalCoordinate = verticalCoordinate + 32;           //ASCII table: a:97, j:106 and A:65, J:74 ==> 65 + 32 = 97
+            }
 
             emptyBuffer();
 
-        } while (verticalCoordinate < 97 || verticalCoordinate > 106); //I used the ASCII table 97:a, 106:j
+        } while (verticalCoordinate < 97 || verticalCoordinate > 106);  //See previous comment
 
         do {
 
@@ -474,14 +436,16 @@ void game() {
 
         } while (horizontalCoordinate < 1 || horizontalCoordinate > 10);
 
-        sprintf(selectedCoordinate, "%c%d", verticalCoordinate, horizontalCoordinate);
-        printf("\nCase choisie: %s\n", selectedCoordinate);
+        printf("\nCase choisie: %c%d\n\n", verticalCoordinate, horizontalCoordinate);
 
         gameGridChanges(verticalCoordinate, horizontalCoordinate);
 
     } while (allBoats != 0);
 
-    printf("VICTOIRE !!!\n");
+    printf("############\n"
+           "VICTOIRE !!!\n"
+           "############\n\n"
+           "Score : %d", score);
 
 }
 
@@ -540,6 +504,7 @@ void game() {
 int main() {
     SetConsoleOutputCP(CP_UTF8);
 
+    //Initialization of the game grid and the check grid
     for (int i = 0; i < 10; ++i) {
         for (int j = 0; j < 10; ++j) {
             gameGrid[i][j] = '?';
@@ -547,7 +512,7 @@ int main() {
         }
     }
 
-    /*showHelp();*/
+    displayHelp();
     game();
 
     system("pause");
