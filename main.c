@@ -2,10 +2,10 @@
  * \file      main.c
  * \author    Nithujan Jegatheeswaran
  * \version   0.1
- * \date      11.12.20
+ * \date      13.12.20
  * \brief     A battleship game
  *
- * \details    The game is made to be played in Windows' command prompt and has only one grid with ships' coordinates
+ * \details    The game is made to be played in Windows' command prompt and has only one grid of ships.
  */
 
 #include <stdio.h>
@@ -169,7 +169,7 @@ void gameGridChanges(char vertical, int horizontal) {
     int missed = -50;
     int oldCoordinate = -75;
 
-    int verticalIndex = vertical - 97;
+    int verticalIndex = vertical - 97;      //See the comment in the game() function
     int horizontalIndex = horizontal - 1;
 
     if (userInputs[verticalIndex][horizontalIndex]) {
@@ -376,7 +376,7 @@ void gameGridChanges(char vertical, int horizontal) {
     }
 }
 
-/** \brief game - This function displays the battleship game's grid and wait for the user's inputs until he sunk all the boats
+/** \brief game - This function displays the battleship game's grid and wait for the user's inputs, repeats until the user sink all the boats
  * \return void
  *
  */
@@ -391,29 +391,29 @@ void game() {
         printf("%4c", ' ');
 
         for (int i = 0; i < 10; ++i) {
-            printf("%6d", horizontalHeader[i]);
+            printf("%4d", horizontalHeader[i]);
         }
 
         printf("\n%4c", ' ');
 
         for (int i = 0; i < 10; ++i) {
-            printf("%3c%3c", 'v', '-');
+            printf("%2c%2c", '-', 'v');
         }
 
-        printf("%2c\n%4c\n", 'v', '>');
+        printf("%2c\n%4c\n", '-', '|');
 
         for (int i = 0; i < 10; ++i) {
             printf("%2c", verticalHeader[i]);
-            printf("%2c", '|');
+            printf("%2c", '>');
 
             for (int j = 0; j < 10; ++j) {
-                printf("%6c", gameGrid[i][j]);
+                printf("%4c", gameGrid[i][j]);
             }
 
-            printf("\n%4c\n", '>');
+            printf("\n%4c\n", '|');
         }
 
-        printf("\nScore: %d\n", score);
+        printf("\nScore: %d\n\n", score);
 
         do {
             printf("Veuillez entrer une coordonnée vertical (a-j):\n");
@@ -456,11 +456,13 @@ void game() {
  * \return void
  *
  */
-/*void mainMenu()
+void mainMenu()
 {
     do {
 
-        printf("===============\nBataille Navale\n===============\n"
+        printf("<------------->\n"
+               "Bataille Navale\n"
+               "<------------->\n"
                "Nouvelle partie (1)\n"
                "Aide (2)\n"
                "Quitter(3)\n"
@@ -483,7 +485,7 @@ void game() {
             break;
 
         case 2:
-            showHelp();
+            displayHelp();
             break;
 
         case 3:
@@ -491,9 +493,7 @@ void game() {
             break;
 
     }
-
-    return;
-}*/
+}
 
 
 
@@ -504,7 +504,7 @@ void game() {
 int main() {
     SetConsoleOutputCP(CP_UTF8);
 
-    //Initialization of the game grid and the check grid
+    //Initialization of the game grid and the input check grid
     for (int i = 0; i < 10; ++i) {
         for (int j = 0; j < 10; ++j) {
             gameGrid[i][j] = '?';
