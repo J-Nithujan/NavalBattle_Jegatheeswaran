@@ -445,7 +445,7 @@ void game() {
     printf("############\n"
            "VICTOIRE !!!\n"
            "############\n\n"
-           "Score : %d", score);
+           "Score : %d\n", score);
 
 }
 
@@ -507,7 +507,7 @@ int main() {
     //Initialization of the game grid and the input check grid
     for (int i = 0; i < 10; ++i) {
         for (int j = 0; j < 10; ++j) {
-            gameGrid[i][j] = '?';
+            gameGrid[i][j] = '-';
             userInputs[i][j] = 1;
         }
     }
@@ -519,3 +519,4 @@ int main() {
 
     return 0;
 }
+
