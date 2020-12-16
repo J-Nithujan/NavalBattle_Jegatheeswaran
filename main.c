@@ -2,7 +2,7 @@
  * \file      main.c
  * \author    Nithujan Jegatheeswaran
  * \version   0.1
- * \date      13.12.20
+ * \date      16.12.20
  * \brief     A battleship game
  *
  * \details    The game is made to be played in Windows' command prompt and has only one grid of ships.
@@ -11,12 +11,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
+#include <stdbool.h>
 
 /**Global variables**/
+
 int userInputs[10][10];
 char gameGrid[10][10];
 
-int allBoats = 5;
+int numberOfBoats = 5;
+const int boats[17][2] = {{3, 4},     //3 = D, the five coordinates from the beginning are boat5's locations
+                          {3, 5},
+                          {3, 6},
+                          {3, 7},
+                          {3, 8},
+                          {1, 1},     //1 = B, the 4 coordinates from this line (included) are boat4's locations
+                          {1, 2},
+                          {1, 3},
+                          {1, 4},
+                          {4, 0},     //4 = E, the 3 coordinates from this line (included) are boat31's locations
+                          {5, 0},     //5 = F
+                          {6, 0},     //6 = G
+                          {7, 2},     //7 = H, the 3 coordinates from this line (included) are boat32's locations
+                          {7, 3},
+                          {7, 4},
+                          {6, 6},     //6 = G, the last 2 coordinates are related to boat2
+                          {7, 6}};
+
+/*
 int boat5[5][2] = {{3, 4},
                    {3, 5},
                    {3, 6},
@@ -38,7 +59,8 @@ int boat32[3][2] = {{7, 2},
 
 int boat2[2][2] = {{6, 6},  //G=6
                    {7, 6}}; //H=7
-
+*/
+//Health variables helps to determine if a boat is sunk, or not, when hit
 int boat5Health = 4;
 int boat4Health = 3;
 int boat31Health = 2;
@@ -48,13 +70,21 @@ int boat2Health = 1;
 int choice = 0;
 
 int score = 0;
+const int hit = 100;
+const int missed = -50;
+const int oldCoordinate = -75;
+const int sink = 250;
+//These indexes helps to manipulate arrays
+int verticalIndex = 0;
+int horizontalIndex = 0;
+
 
 
 
 /**Fonctions**/
 
 /** \brief emptyBuffer - This function helps avoiding infinite loops in the scanf() function
- * \return void
+ * \return
  *
  */
 void emptyBuffer() {
@@ -65,7 +95,7 @@ void emptyBuffer() {
 }
 
 /** \brief showHelp - This function displays the explanation of the game to the user
- * \return void
+ * \return
  *
  */
 void displayHelp() {
@@ -82,10 +112,10 @@ void displayHelp() {
                "Raté: -50pts | Touché: 100pts | Touché-coulé: 250pts | Déjà tiré: -75pts\n\n"
                "État des cases:\n"
                "---------------\n"
-               "Case inconnue: ?\n"
-               "Ratée: ~\n"
-               "Touchée: X\n"
-               "Coulée: O\n\n"
+               "Case inconnue:(.)\n"
+               "Ratée: (~)\n"
+               "Touchée: (O)\n"
+               "Coulée: (X)\n\n"
                "=====================\n"
                "Lancer une partie (1)\n"
                "=====================\n");
@@ -104,7 +134,7 @@ void displayHelp() {
 
 
 /** \brief boatsEnd - This function changes the state of the grid when a ship is sunk
- * \return void
+ * \return
  *
  */
 void boatsEnd(int boatNumber) {
@@ -116,42 +146,42 @@ void boatsEnd(int boatNumber) {
 
     switch (boatNumber) {
         case 2:
-            for (int i = 0; i < 2; ++i) {
-                gameGrid[boat2[i][0]][boat2[i][1]] = 'O';
+            for (int i = 15; i < 17; ++i) {
+                gameGrid[boats[i][0]][boats[i][1]] = 'X';
             }
-            --allBoats;
-            score += 250;
-            break;
-
-        case 31:
-            for (int i = 0; i < 3; ++i) {
-                gameGrid[boat31[i][0]][boat31[i][1]] = 'O';
-            }
-            --allBoats;
-            score += 250;
+            --numberOfBoats;
+            score += sink;
             break;
 
         case 32:
-            for (int i = 0; i < 3; ++i) {
-                gameGrid[boat32[i][0]][boat32[i][1]] = 'O';
+            for (int i = 12; i < 15; ++i) {
+                gameGrid[boats[i][0]][boats[i][1]] = 'X';
             }
-            --allBoats;
-            score += 250;
+            --numberOfBoats;
+            score += sink;
+            break;
+
+        case 31:
+            for (int i = 9; i < 12; ++i) {
+                gameGrid[boats[i][0]][boats[i][1]] = 'X';
+            }
+            --numberOfBoats;
+            score += sink;
             break;
 
         case 4:
-            for (int i = 0; i < 4; ++i) {
-                gameGrid[boat4[i][0]][boat4[i][1]] = 'O';
+            for (int i = 5; i < 9; ++i) {
+                gameGrid[boats[i][0]][boats[i][1]] = 'X';
             }
-            --allBoats;
-            score += 250;
+            --numberOfBoats;
+            score += sink;
             break;
 
         case 5:
             for (int i = 0; i < 5; ++i) {
-                gameGrid[boat5[i][0]][boat5[i][1]] = 'O';
+                gameGrid[boats[i][0]][boats[i][1]] = 'X';
             }
-            --allBoats;
+            --numberOfBoats;
             score += 250;
             break;
 
@@ -160,23 +190,121 @@ void boatsEnd(int boatNumber) {
     }
 }
 
-/** \brief gameGridChanges - This function makes the changes related to the user's input entered in the game() function
- * \return void
+/** \brief hotOrSink - This function calculate if a boat is hit or not, or if the coordinates were already entered
+ * \return
  *
  */
-void gameGridChanges(char vertical, int horizontal) {
-    int hit = 100;
-    int missed = -50;
-    int oldCoordinate = -75;
+void hitOrSink(int vertical, int horizontal) {
+    for (int i = 0; i < 5; ++i) {
+        if ((vertical == boats[i][0]) && (horizontal == boats[i][1]) && (boat5Health != 0)) {
+            printf("########\n"
+                   "TOUCHÉ !\n"
+                   "########\n\n");
 
-    int verticalIndex = vertical - 97;      //See the comment in the game() function
-    int horizontalIndex = horizontal - 1;
+            gameGrid[vertical][horizontal] = 'O';
+            --boat5Health;
+            score += hit;
+            return;
+
+        } else if ((vertical == boats[i][0]) && (horizontal == boats[i][1])) {
+            boatsEnd(5);
+        }
+    }
+
+    for (int i = 5; i < 9; ++i) {
+        if ((vertical == boats[i][0]) && (horizontal == boats[i][1]) && (boat4Health != 0)) {
+            printf("########\n"
+                   "TOUCHÉ !\n"
+                   "########\n\n");
+
+            gameGrid[vertical][horizontal] = 'O';
+            --boat4Health;
+            score += hit;
+            return;
+
+        } else if ((vertical == boats[i][0]) && (horizontal == boats[i][1])) {
+            boatsEnd(4);
+        }
+    }
+
+    for (int i = 9; i < 12; ++i) {
+        if ((vertical == boats[i][0]) && (horizontal == boats[i][1]) && (boat31Health != 0)) {
+            printf("########\n"
+                   "TOUCHÉ !\n"
+                   "########\n\n");
+
+            gameGrid[vertical][horizontal] = 'O';
+            --boat31Health;
+            score += hit;
+            return;
+
+        } else if ((vertical == boats[i][0]) && (horizontal == boats[i][1])) {
+            boatsEnd(31);
+        }
+    }
+
+    for (int i = 12; i < 15; ++i) {
+        if ((vertical == boats[i][0]) && (horizontal == boats[i][1]) && (boat32Health != 0)) {
+            printf("########\n"
+                   "TOUCHÉ !\n"
+                   "########\n\n");
+
+            gameGrid[vertical][horizontal] = 'O';
+            --boat32Health;
+            score += hit;
+            return;
+
+        } else if ((vertical == boats[i][0]) && (horizontal == boats[i][1])) {
+            boatsEnd(32);
+        }
+    }
+
+    for (int i = 15; i < 17; ++i) {
+        if ((vertical == boats[i][0]) && (horizontal == boats[i][1]) && (boat2Health != 0)) {
+            printf("########\n"
+                   "TOUCHÉ !\n"
+                   "########\n\n");
+
+            gameGrid[vertical][horizontal] = 'O';
+            --boat2Health;
+            score += hit;
+            return;
+
+        } else if ((vertical == boats[i][0]) && (horizontal == boats[i][1])) {
+            boatsEnd(2);
+        }
+    }
+}
+
+/** \brief gameGridChanges - This function makes the changes related to the user's input entered in the game() function
+ * \return
+ *
+ */
+void hitOrMiss(char vertical, int horizontal) {
+    verticalIndex = vertical - 97;      //ASCII table: a:97
+    horizontalIndex = horizontal - 1;   //Array's index start from 0 unlike or game board
+    bool miss = 1;
 
     if (userInputs[verticalIndex][horizontalIndex]) {
 
         userInputs[verticalIndex][horizontalIndex] = 0;
 
-        switch (verticalIndex) {
+        for (int i = 0; i < 17; ++i) {
+            if (boats[i][0] == verticalIndex && boats[i][1] == horizontalIndex) {
+                hitOrSink(verticalIndex, horizontalIndex);
+                miss = 0;
+            }
+        }
+
+        if (miss) {
+            printf("######\n"
+                   "PLOUF!\n"
+                   "######\n\n");
+
+            gameGrid[verticalIndex][horizontalIndex] = '~';
+            score += missed;
+        }
+        /*switch (verticalIndex) {
             case 1:
                 for (int i = 0; i < 4; ++i) {
                     if (horizontalIndex == boat4[i][1] && boat4Health != 0) {
@@ -369,7 +497,7 @@ void gameGridChanges(char vertical, int horizontal) {
 
                 gameGrid[verticalIndex][horizontalIndex] = '~';
                 score += missed;
-        }
+        }*/
     } else {
         printf("/!\\ COORDONNÉE DÉJÀ ENTRÉE !!! /!\\\n\n");
         score += oldCoordinate;
@@ -377,10 +505,18 @@ void gameGridChanges(char vertical, int horizontal) {
 }
 
 /** \brief game - This function displays the battleship game's grid and wait for the user's inputs, repeats until the user sink all the boats
- * \return void
+ * \return
  *
  */
 void game() {
+    //Initialization of the game grid and the input check grid
+    for (int i = 0; i < 10; ++i) {
+        for (int j = 0; j < 10; ++j) {
+            gameGrid[i][j] = '.';
+            userInputs[i][j] = 1;
+        }
+    }
+
     do {
         int horizontalHeader[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         char verticalHeader[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
@@ -419,13 +555,15 @@ void game() {
             printf("Veuillez entrer une coordonnée vertical (a-j):\n");
             scanf("%c", &verticalCoordinate);
 
+            //ASCII table: a:97, j:106 and A:65, J:74 ==> 65 + 32 = 97
             if (verticalCoordinate >= 65 && verticalCoordinate <= 74) {
-                verticalCoordinate = verticalCoordinate + 32;           //ASCII table: a:97, j:106 and A:65, J:74 ==> 65 + 32 = 97
+                verticalCoordinate = verticalCoordinate + 32;
             }
 
             emptyBuffer();
 
-        } while (verticalCoordinate < 97 || verticalCoordinate > 106);  //See previous comment
+            //ASCII table: a:97 and j:106
+        } while (verticalCoordinate < 97 || verticalCoordinate > 106);
 
         do {
 
@@ -438,26 +576,25 @@ void game() {
 
         printf("\nCase choisie: %c%d\n\n", verticalCoordinate, horizontalCoordinate);
 
-        gameGridChanges(verticalCoordinate, horizontalCoordinate);
+        hitOrMiss(verticalCoordinate, horizontalCoordinate);
 
-    } while (allBoats != 0);
+    } while (numberOfBoats != 0);
 
     printf("############\n"
            "VICTOIRE !!!\n"
            "############\n\n"
-           "Score : %d", score);
+           "Score : %d\n", score);
 
 }
 
 
 
-/**Will be updated and used in v1.0*/
+/*Will be updated and used in v1.0*/
 /** \brief mainMenu - This function shows the main menu of the game and bring the user to the selected place
- * \return void
+ * \return
  *
  */
-void mainMenu()
-{
+void mainMenu() {
     do {
 
         printf("<------------->\n"
@@ -469,16 +606,14 @@ void mainMenu()
                "==============\n");
         scanf("%d", &choice);
 
-        if (choice != 1 && choice != 2 && choice != 3 )
-        {
+        if (choice != 1 && choice != 2 && choice != 3) {
             printf("VEUILLEZ FAIRE UN CHOIX AVEC LES TOUCHES 1, 2 OU 3 !!!\n\n");
         }
 
         emptyBuffer();
-    }while (choice != 1 && choice != 2 && choice != 3 );
+    } while (choice != 1 && choice != 2 && choice != 3);
 
-    switch (choice)
-    {
+    switch (choice) {
 
         case 1:
             game();
@@ -496,21 +631,12 @@ void mainMenu()
 }
 
 
-
 /** \brief main - This function is the program's entry point
  * \return an int different from 0 if abnormal termination
  *
  */
 int main() {
     SetConsoleOutputCP(CP_UTF8);
-
-    //Initialization of the game grid and the input check grid
-    for (int i = 0; i < 10; ++i) {
-        for (int j = 0; j < 10; ++j) {
-            gameGrid[i][j] = '?';
-            userInputs[i][j] = 1;
-        }
-    }
 
     displayHelp();
     game();
