@@ -630,7 +630,6 @@ void mainMenu() {
     }
 }
 
-
 /** \brief main - This function is the program's entry point
  * \return an int different from 0 if abnormal termination
  *
