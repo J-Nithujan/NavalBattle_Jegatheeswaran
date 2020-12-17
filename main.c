@@ -14,13 +14,14 @@
 #include <stdbool.h>
 
 /**Global variables**/
-
 int userInputs[10][10] = {0};
 char gameGrid[10][10] = {' '};
 
+bool newGame = 0;
+
 int numberOfBoats = 5;
 
-//This grid contains all boats' positions, the order of the coordinates is VITAL
+//This grid contains all boats' positions, the order of the coordinates is /!\ VITAL /!\
 
 const int boats[17][2] = {{3, 4},     //3 = D, the five coordinates from the beginning are boat5's locations
                           {3, 5},
@@ -60,6 +61,9 @@ const int missed = -50;
 const int oldCoordinate = -75;
 const int sink = 250;
 
+//Graphical split line
+const char splitLine[69] = "><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><";
+
 /**Fonctions**/
 
 /** \brief emptyBuffer - This function helps avoiding infinite loops in the scanf() function
@@ -78,10 +82,12 @@ void emptyBuffer() {
  *
  */
 void displayHelp() {
+    choice = 0;
+
     do {
-        printf("/-----------\\\n"
+        printf("%s\n\n"
                " Aide de jeu\n"
-               "\\-----------/\n\n"
+               "#############\n\n"
                "Le but du jeu est de couler tous les navires cachés dans une grille.\n"
                "Pour faire cela il faut tirer sur une des cases de la grille en indiquant une coordonnée.\n"
                "Répétez cette opération jusqu'à ce que tous les navires soient coulés\n\n"
@@ -93,26 +99,24 @@ void displayHelp() {
                "Case inconnue: (.)\n"
                "Ratée: (~)\n"
                "Touchée: (O)\n"
-               "Coulée: (X)\n\n"
-               "=====================\n"
-               "Lancer une partie (1)\n"
-               "Retour au Menu principal ()\n"
-               "=====================\n");
+               "Coulée: (X)\n"
+               "Conseil: pour un meilleur confort visuel, jouez avec la fenêtre en pleine écran\n\n"
+               "%s\nRetour au Menu principal (4)\n%s\n",
+               splitLine, splitLine, splitLine);
 
         scanf("%d", &choice);
 
-
-        if (choice != 1) {
-            printf("\n/!\\ UTILISEZ LA TOUCHE 1 POUR LANCER UNE PARTIE /!\\\n\n");
-        }
-
         emptyBuffer();
 
-    } while (choice != 1 );
+        if (choice != 4) {
+            printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n");
+        }
+
+    } while (choice != 4);
 }
 
 
-/** \brief boatsEnd - This function changes the state of the grid when a ship is sunk: (O)'s are replaced with (X)'s
+/** \brief boatsEnd - This function changes the state of the grid when a ship is sunk: related (O)'s are replaced by (X)'s
  *
  *
  */
@@ -255,7 +259,7 @@ void hitOrSink(int vertical, int horizontal) {
     }
 }
 
-/** \brief gameGridChanges - This function calculates if a boat is hit or not, or if the coordinates were already entered
+/** \brief hitOrMiss - This function calculates if a boat is hit or not, or if the coordinates were already entered
  *
  *
  */
@@ -264,7 +268,7 @@ void hitOrMiss(char vertical, int horizontal) {
     horizontalIndex = horizontal - 1;   //Array's index start from 0 unlike the game board seen by the user
     bool miss = 1;
 
-    //This "if" tests if the coordinates were already entered by the user
+    //This tests if the coordinates were already entered by the user
     if (userInputs[verticalIndex][horizontalIndex]) {
 
         userInputs[verticalIndex][horizontalIndex] = 0;
@@ -296,24 +300,29 @@ void hitOrMiss(char vertical, int horizontal) {
  *
  */
 void game() {
-    //Initialization of the game grid and the input check grid
-    for (int i = 0; i < 10; ++i) {
-        for (int j = 0; j < 10; ++j) {
-            gameGrid[i][j] = '.';
-            userInputs[i][j] = 1;
+    choice = 0;
+
+    //Initialization of the game grid and the input check grid, once per game
+    if (newGame) {
+        for (int i = 0; i < 10; ++i) {
+            for (int j = 0; j < 10; ++j) {
+                gameGrid[i][j] = '.';
+                userInputs[i][j] = 1;
+            }
         }
+        newGame = 0;
     }
 
     do {
-        //Initialization of the board's headers
+        //Initialization of the grid's headers
         int horizontalHeader[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         char verticalHeader[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
 
+        //Variables used to take user's input for the game grid
         int horizontalCoordinate = 0;
         char verticalCoordinate = '0';
 
-        printf("><><><><><><><><><><><><><><><><><><><><><><><><><><\n\n"
-               "%4c", ' ');
+        printf("%s\n\n%4c", splitLine,' ');
 
         for (int i = 0; i < 10; ++i) {
             printf("%4d", horizontalHeader[i]);
@@ -344,7 +353,7 @@ void game() {
             printf("Veuillez entrer une coordonnée vertical (a-j):\n");
             scanf("%c", &verticalCoordinate);
 
-            //If an uppercase letter is entered it is changed to a lowercase one, ASCII table: a = 97 and A = 65 --> 97 - 65 = 32
+            //If an uppercase letter is entered it is changed to a lowercase one, ASCII table: a is 97 and A is 65 --> 97 - 65 = 32
             if (verticalCoordinate >= 65 && verticalCoordinate <= 74) {
                 verticalCoordinate = verticalCoordinate + 32;
             }
@@ -352,12 +361,10 @@ void game() {
             emptyBuffer();
 
             //ASCII table: a = 97 and j = 106
-        } while (verticalCoordinate < 97 || verticalCoordinate > 106 /*|| choice != 4*/);
+        } while (verticalCoordinate < 97 || verticalCoordinate > 106);
 
-        if (choice == 4) return;
 
         do {
-
             printf("Veuillez entrer une coordonnée horizontale (1-10):\n");
             scanf("%d", &horizontalCoordinate);
 
@@ -365,7 +372,6 @@ void game() {
 
         } while ((horizontalCoordinate < 1 || horizontalCoordinate > 10));
 
-        if (choice == 4) return;
 
         printf("\nCase choisie: %c%d\n\n", verticalCoordinate, horizontalCoordinate);
 
@@ -378,8 +384,22 @@ void game() {
            "############\n\n"
            "Score : %d\n", score);
 
-}
+    do {
+        printf("%s\n"
+               "Quitter (3)\n"                      //button 3 is used in the mainMenu function (consistency)
+               "Retour au Menu principal (4)\n"     //buttons 1, 2 and 3 are already used for new game, help and quit in mainMenu
+               "%s\n", splitLine, splitLine);
+        scanf("%d", &choice);
 
+        emptyBuffer();
+
+        if (choice != 3 && choice != 4) {
+            printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n"
+                   "%s\n\n", splitLine);
+        }
+    }while (choice != 3 && choice != 4);
+
+}
 
 
 /*Will be updated and used in v1.0*/
@@ -391,24 +411,21 @@ void mainMenu() {
     do {
         choice = 0;
 
-        printf("/---------------\\\n"
+        printf("%s\n\n"
                " Batialle navale\n"
-               "\\---------------/\n\n"
+               "#################\n\n"
                "Nouvelle partie (1)\n"
                "Aide (2)\n"
-               "Quitter(3)\n"
-               "==============\n");
-        scanf("%d", &choice);
+               "Quitter(3)\n\n"
+               "%s\n", splitLine, splitLine);
 
-        if (choice != 1 && choice != 2 && choice != 3) {
-            printf("VEUILLEZ FAIRE UN CHOIX AVEC LES TOUCHES 1, 2 OU 3 !!!\n\n");
-        }
+        scanf("%d", &choice);
 
         emptyBuffer();
 
         switch (choice) {
-
             case 1:
+                newGame = 1;
                 game();
                 break;
 
@@ -420,10 +437,10 @@ void mainMenu() {
                 system("exit");
                 break;
 
+            default:
+                printf("\nVEUILLEZ FAIRE UN CHOIX AVEC LES TOUCHES 1, 2 OU 3 !!!\n");;
         }
-
     } while (choice != 1 && choice != 2 && choice != 3);
-
 }
 
 /** \brief main - This function is the program's entry point
@@ -432,11 +449,11 @@ void mainMenu() {
  */
 int main() {
     SetConsoleOutputCP(CP_UTF8);
-    do {
+
+    while (choice != 3){
         mainMenu();
-    }while (choice != 3);
+    }
 
     system("pause");
-
     return 0;
 }
