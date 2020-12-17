@@ -15,10 +15,13 @@
 
 /**Global variables**/
 
-int userInputs[10][10];
-char gameGrid[10][10];
+int userInputs[10][10] = {0};
+char gameGrid[10][10] = {' '};
 
 int numberOfBoats = 5;
+
+//This grid contains all boats' positions, the order of the coordinates is VITAL
+
 const int boats[17][2] = {{3, 4},     //3 = D, the five coordinates from the beginning are boat5's locations
                           {3, 5},
                           {3, 6},
@@ -37,54 +40,30 @@ const int boats[17][2] = {{3, 4},     //3 = D, the five coordinates from the beg
                           {6, 6},     //6 = G, the last 2 coordinates are related to boat2
                           {7, 6}};
 
-/*
-int boat5[5][2] = {{3, 4},
-                   {3, 5},
-                   {3, 6},
-                   {3, 7},
-                   {3, 8}}; //D=3
-
-int boat4[4][2] = {{1, 1},
-                   {1, 2},
-                   {1, 3},
-                   {1, 4}}; //B=1
-
-int boat31[3][2] = {{4, 0},    //E=4
-                    {5, 0},    //F=5
-                    {6, 0}};   //G=6
-
-int boat32[3][2] = {{7, 2},
-                    {7, 3},
-                    {7, 4}};   //H=7
-
-int boat2[2][2] = {{6, 6},  //G=6
-                   {7, 6}}; //H=7
-*/
-//Health variables helps to determine if a boat is sunk, or not, when hit
+//Health variables help to determine if a boat is sunk, or not, when hit
 int boat5Health = 4;
 int boat4Health = 3;
 int boat31Health = 2;
 int boat32Health = 2;
 int boat2Health = 1;
 
+//These indexes help to manipulate arrays
+int verticalIndex = 0;
+int horizontalIndex = 0;
+
 int choice = 0;
 
 int score = 0;
+
 const int hit = 100;
 const int missed = -50;
 const int oldCoordinate = -75;
 const int sink = 250;
-//These indexes helps to manipulate arrays
-int verticalIndex = 0;
-int horizontalIndex = 0;
-
-
-
 
 /**Fonctions**/
 
 /** \brief emptyBuffer - This function helps avoiding infinite loops in the scanf() function
- * \return
+ *
  *
  */
 void emptyBuffer() {
@@ -95,12 +74,11 @@ void emptyBuffer() {
 }
 
 /** \brief showHelp - This function displays the explanation of the game to the user
- * \return
+ *
  *
  */
 void displayHelp() {
     do {
-
         printf("/-----------\\\n"
                " Aide de jeu\n"
                "\\-----------/\n\n"
@@ -112,12 +90,13 @@ void displayHelp() {
                "Raté: -50pts | Touché: 100pts | Touché-coulé: 250pts | Déjà tiré: -75pts\n\n"
                "État des cases:\n"
                "---------------\n"
-               "Case inconnue:(.)\n"
+               "Case inconnue: (.)\n"
                "Ratée: (~)\n"
                "Touchée: (O)\n"
                "Coulée: (X)\n\n"
                "=====================\n"
                "Lancer une partie (1)\n"
+               "Retour au Menu principal ()\n"
                "=====================\n");
 
         scanf("%d", &choice);
@@ -129,21 +108,20 @@ void displayHelp() {
 
         emptyBuffer();
 
-    } while (choice != 1);
+    } while (choice != 1 );
 }
 
 
-/** \brief boatsEnd - This function changes the state of the grid when a ship is sunk
- * \return
+/** \brief boatsEnd - This function changes the state of the grid when a ship is sunk: (O)'s are replaced with (X)'s
+ *
  *
  */
 void boatsEnd(int boatNumber) {
-
-
     printf("###############\n"
            "TOUCHÉ, COULÉ !\n"
            "###############\n\n");
 
+    //Every cases of this switch is linked to a specific boat
     switch (boatNumber) {
         case 2:
             for (int i = 15; i < 17; ++i) {
@@ -185,13 +163,14 @@ void boatsEnd(int boatNumber) {
             score += 250;
             break;
 
+            //
         default:
             printf("Ce navire n'existe pas !!!\n");
     }
 }
 
-/** \brief hotOrSink - This function calculate if a boat is hit or not, or if the coordinates were already entered
- * \return
+/** \brief hitOrSink - This function calculates if a boat is hit or sink: in the first case it replaces the (.)'s with (O)'s, in the second case it calls the hitOrSink function
+ *
  *
  */
 void hitOrSink(int vertical, int horizontal) {
@@ -276,15 +255,16 @@ void hitOrSink(int vertical, int horizontal) {
     }
 }
 
-/** \brief gameGridChanges - This function makes the changes related to the user's input entered in the game() function
- * \return
+/** \brief gameGridChanges - This function calculates if a boat is hit or not, or if the coordinates were already entered
+ *
  *
  */
 void hitOrMiss(char vertical, int horizontal) {
-    verticalIndex = vertical - 97;      //ASCII table: a:97
-    horizontalIndex = horizontal - 1;   //Array's index start from 0 unlike or game board
+    verticalIndex = vertical - 97;      //ASCII table: a = 97 by
+    horizontalIndex = horizontal - 1;   //Array's index start from 0 unlike the game board seen by the user
     bool miss = 1;
 
+    //This "if" tests if the coordinates were already entered by the user
     if (userInputs[verticalIndex][horizontalIndex]) {
 
         userInputs[verticalIndex][horizontalIndex] = 0;
@@ -304,200 +284,7 @@ void hitOrMiss(char vertical, int horizontal) {
             gameGrid[verticalIndex][horizontalIndex] = '~';
             score += missed;
         }
-        /*switch (verticalIndex) {
-            case 1:
-                for (int i = 0; i < 4; ++i) {
-                    if (horizontalIndex == boat4[i][1] && boat4Health != 0) {
-                        printf("########\n"
-                               "TOUCHÉ !\n"
-                               "########\n\n");
 
-                        gameGrid[verticalIndex][horizontalIndex] = 'X';
-                        --boat4Health;
-                        score += hit;
-                        return;
-
-                    } else if (horizontalIndex == boat4[i][1]) {
-                        boatsEnd(4);
-                        return;
-                    }
-                }
-
-                printf("#######\n"
-                       "PLOUF !\n"
-                       "#######\n\n");
-
-                gameGrid[verticalIndex][horizontalIndex] = '~';
-                break;
-
-            case 3:
-
-                for (int i = 0; i < 5; ++i) {
-                    if (horizontalIndex == boat5[i][1] && boat5Health != 0) {
-                        printf("########\n"
-                               "TOUCHÉ !\n"
-                               "########\n\n");
-
-                        gameGrid[verticalIndex][horizontalIndex] = 'X';
-                        --boat5Health;
-                        score += hit;
-                        return;
-
-                    } else if (horizontalIndex == boat5[i][1]) {
-                        boatsEnd(5);
-                        return;
-                    }
-                }
-
-                printf("#######\n"
-                       "PLOUF !\n"
-                       "#######\n\n");
-
-                gameGrid[verticalIndex][horizontalIndex] = '~';
-                score += missed;
-                break;
-
-            case 4:
-
-                if (horizontalIndex == boat31[0][1] && boat31Health != 0) {
-                    printf("########\n"
-                           "TOUCHÉ !\n"
-                           "########\n\n");
-
-                    gameGrid[verticalIndex][horizontalIndex] = 'X';
-                    --boat31Health;
-                    score += hit;
-                    break;
-
-                } else if (horizontalIndex == boat31[0][1]) {
-                    boatsEnd(31);
-                    break;
-                }
-
-                printf("#######\n"
-                       "PLOUF !\n"
-                       "#######\n\n");
-
-                gameGrid[verticalIndex][horizontalIndex] = '~';
-                score += missed;
-                break;
-
-            case 5:
-
-                if (horizontalIndex == boat31[1][1] && boat31Health != 0) {
-                    printf("########\n"
-                           "TOUCHÉ !\n"
-                           "########\n\n");
-
-                    gameGrid[verticalIndex][horizontalIndex] = 'X';
-                    --boat31Health;
-                    score += hit;
-                    break;
-
-                } else if (horizontalIndex == boat31[1][1]) {
-                    boatsEnd(31);
-                    break;
-                }
-
-                printf("#######\n"
-                       "PLOUF !\n"
-                       "#######\n\n");
-
-                gameGrid[verticalIndex][horizontalIndex] = '~';
-                score += missed;
-                break;
-
-            case 6:
-
-                if (horizontalIndex == boat31[2][1] && boat31Health != 0) {
-                    printf("########\n"
-                           "TOUCHÉ !\n"
-                           "########\n\n");
-
-                    gameGrid[verticalIndex][horizontalIndex] = 'X';
-                    --boat31Health;
-                    score += hit;
-                    break;
-
-                } else if (horizontalIndex == boat31[2][1]) {
-                    boatsEnd(31);
-                    break;
-                }
-
-                if (horizontalIndex == boat2[0][1] && boat2Health != 0) {
-                    printf("########\n"
-                           "TOUCHÉ !\n"
-                           "########\n\n");
-
-                    gameGrid[verticalIndex][horizontalIndex] = 'X';
-                    --boat2Health;
-                    score += hit;
-                    break;
-
-                } else if (horizontalIndex == boat2[0][1]) {
-                    boatsEnd(2);
-
-                    break;
-                }
-
-                printf("=======\n"
-                       "PLOUF !\n"
-                       "=======\n\n");
-
-                gameGrid[verticalIndex][horizontalIndex] = '~';
-                score += missed;
-                break;
-
-            case 7:
-
-                for (int i = 0; i < 3; ++i) {
-                    if (horizontalIndex == boat32[i][1] && boat32Health != 0) {
-                        printf("########\n"
-                               "TOUCHÉ !\n"
-                               "########\n\n");
-
-                        gameGrid[verticalIndex][horizontalIndex] = 'X';
-                        --boat32Health;
-                        score += hit;
-                        return;
-
-                    } else if (horizontalIndex == boat32[i][1]) {
-                        boatsEnd(32);
-                        return;
-                    }
-                }
-
-                if (horizontalIndex == boat2[1][1] && boat2Health != 0) {
-                    printf("########\n"
-                           "TOUCHÉ !\n"
-                           "########\n\n");
-
-                    gameGrid[verticalIndex][horizontalIndex] = 'X';
-                    --boat2Health;
-                    score += hit;
-                    break;
-
-                } else if (horizontalIndex == boat2[1][1]) {
-                    boatsEnd(2);
-                    break;
-                }
-
-                printf("#######\n"
-                       "PLOUF !\n"
-                       "#######\n\n");
-
-                gameGrid[verticalIndex][horizontalIndex] = '~';
-                score += missed;
-                break;
-
-            default:
-                printf("######\n"
-                       "PLOUF!\n"
-                       "######\n\n");
-
-                gameGrid[verticalIndex][horizontalIndex] = '~';
-                score += missed;
-        }*/
     } else {
         printf("/!\\ COORDONNÉE DÉJÀ ENTRÉE !!! /!\\\n\n");
         score += oldCoordinate;
@@ -505,7 +292,7 @@ void hitOrMiss(char vertical, int horizontal) {
 }
 
 /** \brief game - This function displays the battleship game's grid and wait for the user's inputs, repeats until the user sink all the boats
- * \return
+ *
  *
  */
 void game() {
@@ -518,13 +305,15 @@ void game() {
     }
 
     do {
+        //Initialization of the board's headers
         int horizontalHeader[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         char verticalHeader[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
 
         int horizontalCoordinate = 0;
         char verticalCoordinate = '0';
 
-        printf("%4c", ' ');
+        printf("><><><><><><><><><><><><><><><><><><><><><><><><><><\n\n"
+               "%4c", ' ');
 
         for (int i = 0; i < 10; ++i) {
             printf("%4d", horizontalHeader[i]);
@@ -555,15 +344,17 @@ void game() {
             printf("Veuillez entrer une coordonnée vertical (a-j):\n");
             scanf("%c", &verticalCoordinate);
 
-            //ASCII table: a:97, j:106 and A:65, J:74 ==> 65 + 32 = 97
+            //If an uppercase letter is entered it is changed to a lowercase one, ASCII table: a = 97 and A = 65 --> 97 - 65 = 32
             if (verticalCoordinate >= 65 && verticalCoordinate <= 74) {
                 verticalCoordinate = verticalCoordinate + 32;
             }
 
             emptyBuffer();
 
-            //ASCII table: a:97 and j:106
-        } while (verticalCoordinate < 97 || verticalCoordinate > 106);
+            //ASCII table: a = 97 and j = 106
+        } while (verticalCoordinate < 97 || verticalCoordinate > 106 /*|| choice != 4*/);
+
+        if (choice == 4) return;
 
         do {
 
@@ -572,7 +363,9 @@ void game() {
 
             emptyBuffer();
 
-        } while (horizontalCoordinate < 1 || horizontalCoordinate > 10);
+        } while ((horizontalCoordinate < 1 || horizontalCoordinate > 10));
+
+        if (choice == 4) return;
 
         printf("\nCase choisie: %c%d\n\n", verticalCoordinate, horizontalCoordinate);
 
@@ -591,15 +384,16 @@ void game() {
 
 /*Will be updated and used in v1.0*/
 /** \brief mainMenu - This function shows the main menu of the game and bring the user to the selected place
- * \return
+ *
  *
  */
 void mainMenu() {
     do {
+        choice = 0;
 
-        printf("<------------->\n"
-               "Bataille Navale\n"
-               "<------------->\n"
+        printf("/---------------\\\n"
+               " Batialle navale\n"
+               "\\---------------/\n\n"
                "Nouvelle partie (1)\n"
                "Aide (2)\n"
                "Quitter(3)\n"
@@ -611,23 +405,25 @@ void mainMenu() {
         }
 
         emptyBuffer();
+
+        switch (choice) {
+
+            case 1:
+                game();
+                break;
+
+            case 2:
+                displayHelp();
+                break;
+
+            case 3:
+                system("exit");
+                break;
+
+        }
+
     } while (choice != 1 && choice != 2 && choice != 3);
 
-    switch (choice) {
-
-        case 1:
-            game();
-            break;
-
-        case 2:
-            displayHelp();
-            break;
-
-        case 3:
-            system("exit");
-            break;
-
-    }
 }
 
 /** \brief main - This function is the program's entry point
@@ -636,9 +432,9 @@ void mainMenu() {
  */
 int main() {
     SetConsoleOutputCP(CP_UTF8);
-
-    displayHelp();
-    game();
+    do {
+        mainMenu();
+    }while (choice != 3);
 
     system("pause");
 
