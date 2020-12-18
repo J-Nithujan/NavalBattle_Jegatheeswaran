@@ -2,7 +2,7 @@
  * \file      main.c
  * \author    Nithujan Jegatheeswaran
  * \version   0.1
- * \date      16.12.20
+ * \date      18.12.20
  * \brief     A battleship game
  *
  * \details    The game is made to be played in Windows' command prompt and has only one grid of ships.
@@ -13,16 +13,20 @@
 #include <windows.h>
 #include <stdbool.h>
 
-/**Global variables**/
+/*Global Variables*/
+
+/**\brief Grid used to check if the user already entered that coordinate*/
 int userInputs[10][10] = {0};
+/**\brief Grid that is shown to the user*/
 char gameGrid[10][10] = {' '};
 
+/**\brief Used when you launch a game from the menu */
 bool newGame = 0;
 
+/**\brief Updated every time a boat is sunk */
 int numberOfBoats = 5;
 
-//This grid contains all boats' positions, the order of the coordinates is /!\ VITAL /!\
-
+/**\brief This grid contains all boats' positions, the order of the coordinates is /!\ VITAL /!\*/
 const int boats[17][2] = {{3, 4},     //3 = D, the five coordinates from the beginning are boat5's locations
                           {3, 5},
                           {3, 6},
@@ -41,30 +45,41 @@ const int boats[17][2] = {{3, 4},     //3 = D, the five coordinates from the beg
                           {6, 6},     //6 = G, the last 2 coordinates are related to boat2
                           {7, 6}};
 
-//Health variables help to determine if a boat is sunk, or not, when hit
+/**\brief Health variables help to determine if a boat is sunk, or not, when hit*/
 int boat5Health = 4;
+/**\brief Health variables help to determine if a boat is sunk, or not, when hit*/
 int boat4Health = 3;
+/**\brief Health variables help to determine if a boat is sunk, or not, when hit*/
 int boat31Health = 2;
+/**\brief Health variables help to determine if a boat is sunk, or not, when hit*/
 int boat32Health = 2;
+/**\brief Health variables help to determine if a boat is sunk, or not, when hit*/
 int boat2Health = 1;
 
-//These indexes help to manipulate arrays
+/**\brief These indexes help to manipulate the userInput and gameGrid arrays*/
 int verticalIndex = 0;
+/**\brief These indexes help to manipulate the userInput and gameGrid arrays*/
 int horizontalIndex = 0;
 
+/**\brief Used to take user's input in main and help menus*/
 int choice = 0;
 
+/**\brief Used to update the player's score*/
 int score = 0;
 
+/**\brief Const used for the score*/
 const int hit = 100;
+/**\brief Const used for the score*/
 const int missed = -50;
+/**\brief Const used for the score*/
 const int oldCoordinate = -75;
+/**\brief Const used for the score*/
 const int sink = 250;
 
-//Graphical split line
+/**\brief Graphical split line*/
 const char splitLine[69] = "><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><";
 
-/**Fonctions**/
+/*Functions*/
 
 /** \brief emptyBuffer - This function helps avoiding infinite loops in the scanf() function
  *
@@ -77,7 +92,7 @@ void emptyBuffer() {
     }
 }
 
-/** \brief showHelp - This function displays the explanation of the game to the user
+/** \brief showHelp - This function displays the explanation of the game to the user and wait for a specific input
  *
  *
  */
@@ -101,7 +116,7 @@ void displayHelp() {
                "Touchée: (O)\n"
                "Coulée: (X)\n"
                "Conseil: pour un meilleur confort visuel, jouez avec la fenêtre en pleine écran\n\n"
-               "%s\nRetour au Menu principal (4)\n%s\n",
+               "%s\nRetour au Menu principal (4)\n%s\n",        //buttons 1,2 and 3 are already used for new game, help and quit in mainMenu
                splitLine, splitLine, splitLine);
 
         scanf("%d", &choice);
@@ -125,7 +140,7 @@ void boatsEnd(int boatNumber) {
            "TOUCHÉ, COULÉ !\n"
            "###############\n\n");
 
-    //Every cases of this switch is linked to a specific boat
+    //Every cases of this switch is linked to a specific boat: 2 is for boat 2, 31 for boat31, etc.
     switch (boatNumber) {
         case 2:
             for (int i = 15; i < 17; ++i) {
@@ -173,7 +188,7 @@ void boatsEnd(int boatNumber) {
     }
 }
 
-/** \brief hitOrSink - This function calculates if a boat is hit or sink: in the first case it replaces the (.)'s with (O)'s, in the second case it calls the hitOrSink function
+/** \brief hitOrSink - This function calculates if a boat is hit or sink: in the first case it replaces the (.)'s with (O)'s, in the second case it calls the boatEnd function
  *
  *
  */
@@ -264,7 +279,7 @@ void hitOrSink(int vertical, int horizontal) {
  *
  */
 void hitOrMiss(char vertical, int horizontal) {
-    verticalIndex = vertical - 97;      //ASCII table: a = 97 by
+    verticalIndex = vertical - 97;      //ASCII table: a = 97, so I need to substract this number to start the indexes from 0
     horizontalIndex = horizontal - 1;   //Array's index start from 0 unlike the game board seen by the user
     bool miss = 1;
 
@@ -318,7 +333,7 @@ void game() {
         int horizontalHeader[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         char verticalHeader[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
 
-        //Variables used to take user's input for the game grid
+        //Variables used to take user's input for the "gameGrid" array
         int horizontalCoordinate = 0;
         char verticalCoordinate = '0';
 
@@ -401,8 +416,6 @@ void game() {
 
 }
 
-
-/*Will be updated and used in v1.0*/
 /** \brief mainMenu - This function shows the main menu of the game and bring the user to the selected place
  *
  *
