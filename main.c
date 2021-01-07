@@ -79,6 +79,9 @@ const int sink = 250;
 /**\brief Graphical split line*/
 const char splitLine[69] = "><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><";
 
+/**\brief Name entered by the player*/
+char playerName[20] = "";
+
 /*Functions*/
 
 /** \brief emptyBuffer - This function helps avoiding infinite loops in the scanf() function
@@ -90,6 +93,25 @@ void emptyBuffer() {
     while (c != '\n' && c != EOF) {
         c = getchar();
     }
+}
+
+/** \brief showHelp - This function ask the player for a nickname with the purpose of saving his score
+ *
+ *
+ */
+void registerPlayer(){
+    bool incorrect = 1;
+
+    do {
+        printf("%s\n\nEntrez votre nom de joueur (Taille: entre 1 et 20 caractères):\n", splitLine);
+        scanf("%s", &playerName);
+        emptyBuffer();
+
+        if (strlen(playerName) < 1 || strlen(playerName) > 20){                                     ///Certains symboles ne passent pas !!!!
+            printf("\n/!\\ VOTRE NOM DE JOUEUR DOIT CONTENIR ENTRE 1 ET 20 CARACTÈRES /!\\\n\n");
+        } else incorrect = 0;
+
+    }while (incorrect);
 }
 
 /** \brief showHelp - This function displays the explanation of the game to the user and wait for a specific input
@@ -116,18 +138,18 @@ void displayHelp() {
                "Touchée: (O)\n"
                "Coulée: (X)\n"
                "Conseil: pour un meilleur confort visuel, jouez avec la fenêtre en pleine écran\n\n"
-               "%s\nRetour au Menu principal (4)\n%s\n",        //buttons 1,2 and 3 are already used for new game, help and quit in mainMenu
+               "%s\nRetour au Menu principal (5)\n%s\n",        //buttons 1, 2, 3 and 4 are already used for new game, help, scores and quit in mainMenu
                splitLine, splitLine, splitLine);
 
         scanf("%d", &choice);
 
         emptyBuffer();
 
-        if (choice != 4) {
+        if (choice != 5) {
             printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n");
         }
 
-    } while (choice != 4);
+    } while (choice != 5);
 }
 
 
@@ -184,7 +206,29 @@ void boatsEnd(int boatNumber) {
 
             //
         default:
-            printf("Ce navire n'existe pas !!!\n");
+            printf("CE NAVIRE N'EXISTE PAS !!!\n");
+    }
+}
+
+void boatSink(int boatNumber) {
+    switch (boatNumber) {
+        case 5:
+            ;
+
+        case 4:
+            ;
+
+        case 31:
+            ;
+
+        case 32:
+            ;
+
+        case 2:
+            ;
+
+        default:
+            printf("\n/!\\CE BATEAU N'EXISTE PAS/!\\\n");
     }
 }
 
@@ -289,7 +333,7 @@ void hitOrMiss(char vertical, int horizontal) {
         userInputs[verticalIndex][horizontalIndex] = 0;
 
         for (int i = 0; i < 17; ++i) {
-            if (boats[i][0] == verticalIndex && boats[i][1] == horizontalIndex) {
+            if (boats[i][0] == verticalIndex && boats[i][1] == horizontalIndex) {   //Modify with 5,4,31,32,2 with a grid (again)
                 hitOrSink(verticalIndex, horizontalIndex);
                 miss = 0;
             }
@@ -305,7 +349,7 @@ void hitOrMiss(char vertical, int horizontal) {
         }
 
     } else {
-        printf("/!\\ COORDONNÉE DÉJÀ ENTRÉE !!! /!\\\n\n");
+        printf("/!\\ COORDONNÉE DÉJÀ ENTRÉE /!\\\n\n");
         score += oldCoordinate;
     }
 }
@@ -317,8 +361,21 @@ void hitOrMiss(char vertical, int horizontal) {
 void game() {
     choice = 0;
 
-    //Initialization of the game grid and the input check grid, once per game
+    //Initialization of variables related to the win conditions, useful only when you start another game without closing the program
     if (newGame) {
+        score = 0;
+
+        //Initialization of the number of remaining boats
+        numberOfBoats = 5;
+
+        //Initialization of the boats' health variables
+        boat5Health = 4;
+        boat4Health = 3;
+        boat31Health = 2;
+        boat32Health = 2;
+        boat2Health = 1;
+
+        //Initialization of the game grid and the input check grid
         for (int i = 0; i < 10; ++i) {
             for (int j = 0; j < 10; ++j) {
                 gameGrid[i][j] = '.';
@@ -401,18 +458,18 @@ void game() {
 
     do {
         printf("%s\n"
-               "Quitter (3)\n"                      //button 3 is used in the mainMenu function (consistency)
-               "Retour au Menu principal (4)\n"     //buttons 1, 2 and 3 are already used for new game, help and quit in mainMenu
+               "Quitter (4)\n"                      //Button 4 is used in the mainMenu function (consistency)
+               "Retour au Menu principal (5)\n"     //Button 5 is used when you check the help in game
                "%s\n", splitLine, splitLine);
         scanf("%d", &choice);
 
         emptyBuffer();
 
         if (choice != 3 && choice != 4) {
-            printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n"
+            printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n\n"
                    "%s\n\n", splitLine);
         }
-    }while (choice != 3 && choice != 4);
+    }while (choice != 4 && choice != 5);
 
 }
 
@@ -429,7 +486,8 @@ void mainMenu() {
                "#################\n\n"
                "Nouvelle partie (1)\n"
                "Aide (2)\n"
-               "Quitter(3)\n\n"
+               "Scores (3)\n"
+               "Quitter(4)\n\n"
                "%s\n", splitLine, splitLine);
 
         scanf("%d", &choice);
@@ -439,6 +497,11 @@ void mainMenu() {
         switch (choice) {
             case 1:
                 newGame = 1;
+                registerPlayer();
+
+                /**Player Name Test*/
+                printf("\nPlayer name: %s\n", playerName);
+
                 game();
                 break;
 
@@ -447,13 +510,16 @@ void mainMenu() {
                 break;
 
             case 3:
+                /**Scores (Work In Progress)*/
+
+            case 4:
                 system("exit");
                 break;
 
             default:
-                printf("\nVEUILLEZ FAIRE UN CHOIX AVEC LES TOUCHES 1, 2 OU 3 !!!\n");;
+                printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n\n");
         }
-    } while (choice != 1 && choice != 2 && choice != 3);
+    } while (choice != 1 && choice != 2 && choice != 3 && choice != 4);
 }
 
 /** \brief main - This function is the program's entry point
@@ -463,7 +529,7 @@ void mainMenu() {
 int main() {
     SetConsoleOutputCP(CP_UTF8);
 
-    while (choice != 3){
+    while (choice != 4){
         mainMenu();
     }
 
