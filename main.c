@@ -112,6 +112,9 @@ void registerPlayer(){
         } else incorrect = 0;
 
     }while (incorrect);
+
+    /**Player Name Test*/
+    printf("\nPlayer name: %s\n", playerName);
 }
 
 /** \brief showHelp - This function displays the explanation of the game to the user and wait for a specific input
@@ -459,7 +462,7 @@ void game() {
     do {
         printf("%s\n"
                "Quitter (4)\n"                      //Button 4 is used in the mainMenu function (consistency)
-               "Retour au Menu principal (5)\n"     //Button 5 is used when you check the help in game
+               "Retour au Menu principal (5)\n"     //Button 5 is used to return to the main menu when you check the help from the main menu
                "%s\n", splitLine, splitLine);
         scanf("%d", &choice);
 
@@ -482,7 +485,7 @@ void mainMenu() {
         choice = 0;
 
         printf("%s\n\n"
-               " Batialle navale\n"
+               " Bataille navale\n"
                "#################\n\n"
                "Nouvelle partie (1)\n"
                "Aide (2)\n"
@@ -498,10 +501,6 @@ void mainMenu() {
             case 1:
                 newGame = 1;
                 registerPlayer();
-
-                /**Player Name Test*/
-                printf("\nPlayer name: %s\n", playerName);
-
                 game();
                 break;
 
