@@ -27,25 +27,6 @@ int positions[10][10] = {0};
 /**\brief Updated every time a boat is sunk */
 int numberOfBoats = 5;
 
-/**\brief This grid contains all boats' positions, the order of the coordinates is /!\ VITAL /!\*/
-const int boats[17][2] = {{3, 4},     //3 = D, the five coordinates from the beginning are boat5's locations
-                          {3, 5},
-                          {3, 6},
-                          {3, 7},
-                          {3, 8},
-                          {1, 1},     //1 = B, the 4 coordinates from this line (included) are boat4's locations
-                          {1, 2},
-                          {1, 3},
-                          {1, 4},
-                          {4, 0},     //4 = E, the 3 coordinates from this line (included) are boat31's locations
-                          {5, 0},     //5 = F
-                          {6, 0},     //6 = G
-                          {7, 2},     //7 = H, the 3 coordinates from this line (included) are boat32's locations
-                          {7, 3},
-                          {7, 4},
-                          {6, 6},     //6 = G, the last 2 coordinates are related to boat2
-                          {7, 6}};
-
 /**\brief Health variables help to determine if a boat is sunk, or not, when hit*/
 int boat5Health = 4;
 /**\brief Health variables help to determine if a boat is sunk, or not, when hit*/
@@ -80,9 +61,9 @@ const char splitLine[69] = "><><><><><><><><><><><><><><><><><><><><><><><><><><
 char playerName[20] = "";
 
 /**\brief Pointer used for the logs .txt file*/
-const FILE *fptrLogs; //fptr stands for filePointer
+FILE *fptrLogs; //fptr stands for filePointer
 /**\brief Pointer used for the scores .txt file*/
-const FILE *fptrScores; //fptr stands for filePointer
+FILE *fptrScores; //fptr stands for filePointer
 
 /*Functions*/
 
@@ -96,9 +77,48 @@ void emptyBuffer() {
         c = getchar();
     }
 }
+//NE MARCHE PAS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+void showScores() {
+    char dataToBeRead[100] = "";
+    fptrScores = fopen("Scores.txt", "r");
 
-void writeInFile(char data[], FILE *filePointer) {
+    if (fptrScores == NULL) {
+        printf("\n/!\\ ERREUR LORS DE LA CHARGEMENT DES SCORES /!\\\n");
 
+    } else if (fseek(fptrScores, 0, SEEK_END) == 0) {
+        printf("\n/!\\ PAS DE SCORES À AFFICHER, SOYEZ LE PREMIER /!\\\n\n");
+
+    } else {
+        printf("%s\n\n"
+               " Scores\n"
+               "########\n\n", splitLine);
+
+        while (fgets(dataToBeRead, 100, fptrScores) != NULL) {
+            printf("%s", dataToBeRead);
+        }
+        printf("\n");
+    }
+}
+
+void writeScore(char pseudo[], int scoreInt) {
+    char scoreChar[10] = "";
+    sprintf(scoreChar, "%d", scoreInt);
+
+    fptrScores = fopen("Scores.txt", "a");
+
+    if (fptrScores == NULL) {
+        printf("\n/!\\ ERREUR LORS DE L'ENREGISTREMENT DES SCORES /!\\\n");
+        return;
+    } else {
+        printf("\nScore sauvegardé\n");
+
+            fputs(scoreChar, fptrScores);
+            fputs(" ", fptrScores);
+            fputs(pseudo, fptrScores);
+            fputs("\n", fptrScores);
+
+    }
+    fclose(fptrScores);
 }
 
 /** \brief registerPlayer - This function
@@ -133,7 +153,6 @@ void registerPlayer() {
 
     } while (incorrect);
 
-    /*Player Name Test*/
     printf("\nPlayer name: %s\n", playerName);
 }
 
@@ -171,7 +190,6 @@ void displayHelp() {
         if (choice != 5) {
             printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n");
         }
-
     } while (choice != 5);
 }
 
@@ -184,12 +202,23 @@ void boatsEnd(int boatNumber) {
            "TOUCHÉ, COULÉ !\n"
            "###############\n\n");
 
+    for (int i = 0; i < 10; ++i) {
+        for (int j = 0; j < 10; ++j) {
+            if (positions[i][j] == boatNumber) {
+                gameGrid[i][j] = 'X';
+            }
+        }
+    }
+
+    numberOfBoats--;
+
+    return;
     //Every cases of this switch is linked to a specific boat: 2 is for boat 2, 31 for boat31, etc.
     switch (boatNumber) {
         case 5:
             for (int i = 0; i < 10; ++i) {
                 for (int j = 0; j < 10; ++j) {
-                    if (positions[i][j] == 5){
+                    if (positions[i][j] == 5) {
                         gameGrid[i][j] = 'X';
                     }
                 }
@@ -197,11 +226,10 @@ void boatsEnd(int boatNumber) {
             --numberOfBoats;
             score += SUNK;
             break;
-
         case 4:
             for (int i = 0; i < 10; ++i) {
                 for (int j = 0; j < 10; ++j) {
-                    if (positions[i][j] == 4){
+                    if (positions[i][j] == 4) {
                         gameGrid[i][j] = 'X';
                     }
                 }
@@ -209,11 +237,10 @@ void boatsEnd(int boatNumber) {
             --numberOfBoats;
             score += SUNK;
             break;
-
         case 31:
             for (int i = 0; i < 10; ++i) {
                 for (int j = 0; j < 10; ++j) {
-                    if (positions[i][j] == 31){
+                    if (positions[i][j] == 31) {
                         gameGrid[i][j] = 'X';
                     }
                 }
@@ -221,11 +248,10 @@ void boatsEnd(int boatNumber) {
             --numberOfBoats;
             score += SUNK;
             break;
-
         case 32:
             for (int i = 0; i < 10; ++i) {
                 for (int j = 0; j < 10; ++j) {
-                    if (positions[i][j] == 32){
+                    if (positions[i][j] == 32) {
                         gameGrid[i][j] = 'X';
                     }
                 }
@@ -233,11 +259,10 @@ void boatsEnd(int boatNumber) {
             --numberOfBoats;
             score += SUNK;
             break;
-
         case 2:
             for (int i = 0; i < 10; ++i) {
                 for (int j = 0; j < 10; ++j) {
-                    if (positions[i][j] == 2){
+                    if (positions[i][j] == 2) {
                         gameGrid[i][j] = 'X';
                     }
                 }
@@ -245,7 +270,6 @@ void boatsEnd(int boatNumber) {
             --numberOfBoats;
             score += 250;
             break;
-
         default:
             printf("CE NAVIRE N'EXISTE PAS !!!\n");
     }
@@ -256,10 +280,9 @@ void boatsEnd(int boatNumber) {
  *
  */
 void hitOrSink(int vertical, int horizontal) {
-
     switch (positions[vertical][horizontal]) {
         case 5:
-            if (boat5Health){
+            if (boat5Health) {
                 printf("########\n"
                        "TOUCHÉ !\n"
                        "########\n\n");
@@ -268,13 +291,12 @@ void hitOrSink(int vertical, int horizontal) {
                 score += HIT;
                 boat5Health--;
 
-            } else{
+            } else {
                 boatsEnd(5);
             }
             break;
-
         case 4:
-            if (boat4Health){
+            if (boat4Health) {
                 printf("########\n"
                        "TOUCHÉ !\n"
                        "########\n\n");
@@ -283,13 +305,12 @@ void hitOrSink(int vertical, int horizontal) {
                 score += HIT;
                 boat4Health--;
 
-            } else{
+            } else {
                 boatsEnd(4);
             }
             break;
-
         case 31:
-            if (boat31Health){
+            if (boat31Health) {
                 printf("########\n"
                        "TOUCHÉ !\n"
                        "########\n\n");
@@ -298,13 +319,12 @@ void hitOrSink(int vertical, int horizontal) {
                 score += HIT;
                 boat31Health--;
 
-            } else{
+            } else {
                 boatsEnd(31);
             }
             break;
-
         case 32:
-            if (boat32Health){
+            if (boat32Health) {
                 printf("########\n"
                        "TOUCHÉ !\n"
                        "########\n\n");
@@ -313,13 +333,12 @@ void hitOrSink(int vertical, int horizontal) {
                 score += HIT;
                 boat32Health--;
 
-            } else{
+            } else {
                 boatsEnd(32);
             }
             break;
-
         case 2:
-            if (boat2Health){
+            if (boat2Health) {
                 printf("########\n"
                        "TOUCHÉ !\n"
                        "########\n\n");
@@ -328,11 +347,10 @@ void hitOrSink(int vertical, int horizontal) {
                 score += HIT;
                 boat2Health--;
 
-            } else{
+            } else {
                 boatsEnd(2);
             }
             break;
-
         default:
             printf("\n/!\\ FATAL ERROR /!\\\n");
 
@@ -357,7 +375,7 @@ void hitOrMiss(char vertical, int horizontal) {
             hitOrSink(verticalIndex, horizontalIndex);
 
             return;
-        } else{
+        } else {
             printf("######\n"
                    "PLOUF!\n"
                    "######\n\n");
@@ -365,7 +383,6 @@ void hitOrMiss(char vertical, int horizontal) {
             gameGrid[verticalIndex][horizontalIndex] = '~';
             score += MISSED;
         }
-
     } else {
         printf("/!\\ COORDONNÉE DÉJÀ ENTRÉE /!\\\n\n");
         score += OLDCOORDINATE;
@@ -384,21 +401,18 @@ void game() {
 
     srand((unsigned) time(NULL));
     //Generation of a random number between 1 and 3
-    int randomNumber = (rand() % 3) +1;
+    int randomNumber = (rand() % 3) + 1;
 
-    switch (randomNumber) {
+    switch (1) {
         case 1:
-            fptrChosenGrid = fopen("grid1.txt", "r");
+            fptrChosenGrid = fopen("Grids/grid1.txt", "r");
             break;
-
         case 2:
-            fptrChosenGrid = fopen("grid2.txt", "r");;
+            fptrChosenGrid = fopen("Grids/grid2.txt", "r");;
             break;
-
         case 3:
-            fptrChosenGrid = fopen("grid3.txt", "r");;
+            fptrChosenGrid = fopen("Grids/grid3.txt", "r");;
             break;
-
         default:
             printf("/!\\ ERREUR INATTENDUE /!\\\n");
     }
@@ -409,29 +423,22 @@ void game() {
         return;
 
     } else {
-        int num = 0;
+
+        int data = 0;
         int count1 = 0;
         int count2 = 0;
 
-        while (fscanf(fptrChosenGrid, "%d", &num) != EOF) {
-            positions[count1][count2] = num;
+        while (fscanf(fptrChosenGrid, "%d", &data) != EOF) {
+            positions[count1][count2] = data;
             count2++;
 
             if (count2 == 10) {
-                printf("\n");
                 count2 = 0;
                 count1++;
             }
         }
 
         fclose(fptrChosenGrid);
-        //Test
-        for (int i = 0; i < 10; ++i) {
-            for (int j = 0; j < 10; ++j) {
-                printf("%d ", positions[i][j]);
-            }
-            printf("\n");
-        }
 
         printf("\n/!\\ CHARGEMENT DE LA GRILLE RÉUSSI /!\\\n");
     }
@@ -487,7 +494,6 @@ void game() {
             for (int j = 0; j < 10; ++j) {
                 printf("%4c", gameGrid[i][j]);
             }
-
             printf("\n%4c\n", '|');
         }
 
@@ -503,10 +509,8 @@ void game() {
             }
 
             emptyBuffer();
-
             //ASCII table: a = 97 and j = 106
         } while (verticalCoordinate < 97 || verticalCoordinate > 106);
-
 
         do {
             printf("Veuillez entrer une coordonnée horizontale (1-10):\n");
@@ -520,13 +524,14 @@ void game() {
         printf("\nCase choisie: %c%d\n\n", verticalCoordinate, horizontalCoordinate);
 
         hitOrMiss(verticalCoordinate, horizontalCoordinate);
-
     } while (numberOfBoats != 0);
 
     printf("############\n"
            "VICTOIRE !!!\n"
            "############\n\n"
            "Score : %d\n", score);
+
+    writeScore(playerName, score);
 
     do {
         printf("%s\n"
@@ -537,7 +542,7 @@ void game() {
 
         emptyBuffer();
 
-        if (choice != 3 && choice != 4) {
+        if (choice != 4 && choice != 5) {
             printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n\n"
                    "%s\n\n", splitLine);
         }
@@ -571,18 +576,15 @@ void mainMenu() {
                 registerPlayer();
                 game();
                 break;
-
             case 2:
                 displayHelp();
                 break;
-
             case 3:
-                /**Scores (Work In Progress)*/
-
+                showScores();
+                break;
             case 4:
                 system("exit");
                 break;
-
             default:
                 printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n\n");
         }
@@ -601,5 +603,6 @@ int main() {
     }
 
     system("pause");
+
     return 0;
 }
