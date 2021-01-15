@@ -2,7 +2,7 @@
  * \file      main.c
  * \author    Nithujan Jegatheeswaran
  * \version   1.0
- * \date      10.01.21
+ * \date      15.01.21
  * \brief     A battleship game
  *
  * \details    The game is made to be played in Windows' command prompt and has only 3 different game grids.
