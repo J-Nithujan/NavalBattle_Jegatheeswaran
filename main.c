@@ -77,15 +77,23 @@ void emptyBuffer() {
         c = getchar();
     }
 }
-//NE MARCHE PAS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+/** \brief emptyBuffer - This function shows the score to the user, it is only used in the main menu
+ *
+ *
+ */
 void showScores() {
     char dataToBeRead[100] = "";
-    fptrScores = fopen("Scores.txt", "r");
+    fptrScores = fopen("data/Scores.txt", "r");
+
+    fseek(fptrScores, 0, SEEK_END);
+    unsigned long length = ftell(fptrScores);
+    fseek(fptrScores, 0, SEEK_SET);
 
     if (fptrScores == NULL) {
-        printf("\n/!\\ ERREUR LORS DE LA CHARGEMENT DES SCORES /!\\\n");
+        printf("\n/!\\ ERREUR LORS DU CHARGEMENT DES SCORES /!\\\n");
 
-    } else if (fseek(fptrScores, 0, SEEK_END) == 0) {
+    } else if (length == 0) {
         printf("\n/!\\ PAS DE SCORES À AFFICHER, SOYEZ LE PREMIER /!\\\n\n");
 
     } else {
@@ -96,7 +104,7 @@ void showScores() {
         while (fgets(dataToBeRead, 100, fptrScores) != NULL) {
             printf("%s", dataToBeRead);
         }
-        printf("\n");
+        printf("\n\n");
     }
 }
 
@@ -403,15 +411,15 @@ void game() {
     //Generation of a random number between 1 and 3
     int randomNumber = (rand() % 3) + 1;
 
-    switch (1) {
+    switch (randomNumber) {
         case 1:
-            fptrChosenGrid = fopen("Grids/grid1.txt", "r");
+            fptrChosenGrid = fopen("data/Grids/grid1.txt", "r");
             break;
         case 2:
-            fptrChosenGrid = fopen("Grids/grid2.txt", "r");;
+            fptrChosenGrid = fopen("data/Grids/grid2.txt", "r");;
             break;
         case 3:
-            fptrChosenGrid = fopen("Grids/grid3.txt", "r");;
+            fptrChosenGrid = fopen("data/Grids/grid3.txt", "r");;
             break;
         default:
             printf("/!\\ ERREUR INATTENDUE /!\\\n");
