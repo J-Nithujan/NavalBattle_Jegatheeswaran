@@ -65,6 +65,10 @@ FILE *fptrLogs; //fptr stands for filePointer
 /**\brief Pointer used for the scores .txt file*/
 FILE *fptrScores; //fptr stands for filePointer
 
+char timeBuffer[75] = "";
+time_t timer;
+struct tm* tm_info;
+
 /*Functions*/
 
 /** \brief emptyBuffer - This function helps avoiding infinite loops in the scanf() function
@@ -84,7 +88,7 @@ void emptyBuffer() {
  */
 void showScores() {
     char dataToBeRead[100] = "";
-    fptrScores = fopen("data/Scores.txt", "r");
+    fptrScores = fopen("data/scores.txt", "r");
 
     fseek(fptrScores, 0, SEEK_END);
     unsigned long length = ftell(fptrScores);
@@ -106,6 +110,7 @@ void showScores() {
         }
         printf("\n\n");
     }
+    fclose(fptrScores);
 }
 
 void writeScore(char pseudo[], int scoreInt) {
@@ -160,6 +165,8 @@ void registerPlayer() {
         }
 
     } while (incorrect);
+
+    //fputs(, fptrLogs);
 
     printf("\nPlayer name: %s\n", playerName);
 }
@@ -413,13 +420,13 @@ void game() {
 
     switch (randomNumber) {
         case 1:
-            fptrChosenGrid = fopen("data/Grids/grid1.txt", "r");
+            fptrChosenGrid = fopen("data/grids/grid1.txt", "r");
             break;
         case 2:
-            fptrChosenGrid = fopen("data/Grids/grid2.txt", "r");;
+            fptrChosenGrid = fopen("data/grids/grid2.txt", "r");;
             break;
         case 3:
-            fptrChosenGrid = fopen("data/Grids/grid3.txt", "r");;
+            fptrChosenGrid = fopen("data/grids/grid3.txt", "r");;
             break;
         default:
             printf("/!\\ ERREUR INATTENDUE /!\\\n");
@@ -606,9 +613,23 @@ void mainMenu() {
 int main() {
     SetConsoleOutputCP(CP_UTF8);
 
+    fptrLogs = fopen("data/logs.txt", "a");
+    
+    timer = time(NULL);
+    tm_info = localtime(&timer);
+    strftime(timeBuffer, 75, "%d-%m-%Y %H:%M:%S", tm_info);
+    fputs(strcat(timeBuffer, "  Program launched\n"), fptrLogs);
+
     while (choice != 4) {
         mainMenu();
     }
+
+    timer = time(NULL);
+    tm_info = localtime(&timer);
+    strftime(timeBuffer, 75, "%d-%m-%Y %H:%M:%S", tm_info);
+    fputs(strcat(timeBuffer, "  Program closed\n\n"), fptrLogs);
+
+    fclose(fptrLogs);
 
     system("pause");
 
