@@ -2,7 +2,7 @@
  * \file      main.c
  * \author    Nithujan Jegatheeswaran
  * \version   1.0
- * \date      15.01.21
+ * \date      21.01.21
  * \brief     A battleship game
  *
  * \details    The game is made to be played in Windows' command prompt and has only 3 different game grids.
@@ -55,7 +55,9 @@ const int OLDCOORDINATE = -75;
 const int SUNK = 250;
 
 /**\brief Graphical split line*/
-const char splitLine[69] = "><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><";
+const char splitLine[75] = "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ";
+/**\brief Graphical split line*/
+const char logSplitLine[75] = "-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-\n";
 
 /**\brief Name entered by the player*/
 char playerName[20] = "";
@@ -64,10 +66,6 @@ char playerName[20] = "";
 FILE *fptrLogs; //fptr stands for filePointer
 /**\brief Pointer used for the scores .txt file*/
 FILE *fptrScores; //fptr stands for filePointer
-
-char timeBuffer[75] = "";
-time_t timer;
-struct tm* tm_info;
 
 /*Functions*/
 
@@ -82,7 +80,42 @@ void emptyBuffer() {
     }
 }
 
-/** \brief emptyBuffer - This function shows the score to the user, it is only used in the main menu
+/** \brief writeLogs - This function write the specified sentence in the file "logs.txt"
+ *
+ *\param log - sentence that need to be logged
+ *
+ */
+void writeLogs(char log[200]) {
+
+    char timeBuffer[75] = "";
+    time_t timer;
+    struct tm *tm_info;
+
+    fptrLogs = fopen("data/logs.txt", "a");
+
+    //It is to "log" how the program is closed, by menus or by closing the window
+    if (!strcmp(log, "Program launched")){
+        fputs(logSplitLine, fptrLogs);
+    }
+
+    timer = time(NULL);
+    tm_info = localtime(&timer);
+    strftime(timeBuffer, 75, "%d-%m-%Y / %H:%M:%S", tm_info);
+    fputs(timeBuffer, fptrLogs);
+
+    fputs(": ", fptrLogs);
+    fputs(log, fptrLogs);
+    fputs("\n", fptrLogs);
+
+    //It is to "log" how the program is closed, by menus or by closing the window
+    if (!strcmp(log, "Program closed")){
+        fputs(logSplitLine, fptrLogs);
+    }
+
+    fclose(fptrLogs);
+}
+
+/** \brief showScores - This function shows the score to the user, it is only used in the main menu
  *
  *
  */
@@ -97,8 +130,12 @@ void showScores() {
     if (fptrScores == NULL) {
         printf("\n/!\\ ERREUR LORS DU CHARGEMENT DES SCORES /!\\\n");
 
+        writeLogs("Scores' file not found");
+
     } else if (length == 0) {
         printf("\n/!\\ PAS DE SCORES À AFFICHER, SOYEZ LE PREMIER /!\\\n\n");
+
+        writeLogs("Scores are displayed");
 
     } else {
         printf("%s\n\n"
@@ -109,37 +146,48 @@ void showScores() {
             printf("%s", dataToBeRead);
         }
         printf("\n\n");
+        writeLogs("Scores' are displayed");
     }
     fclose(fptrScores);
 }
 
+
+/** \brief writeScores - This function write the player's score at the end of a game
+ *
+ * \param pseudo -  name entered by the player, scoreInt - The player's score at the end of the game
+ *
+ */
 void writeScore(char pseudo[], int scoreInt) {
     char scoreChar[10] = "";
     sprintf(scoreChar, "%d", scoreInt);
 
-    fptrScores = fopen("Scores.txt", "a");
+    fptrScores = fopen("scores.txt", "a");
 
     if (fptrScores == NULL) {
         printf("\n/!\\ ERREUR LORS DE L'ENREGISTREMENT DES SCORES /!\\\n");
+
+        writeLogs("'scores.txt' file not found");
         return;
     } else {
         printf("\nScore sauvegardé\n");
 
-            fputs(scoreChar, fptrScores);
-            fputs(" ", fptrScores);
-            fputs(pseudo, fptrScores);
-            fputs("\n", fptrScores);
+        fputs(scoreChar, fptrScores); //!!!!!!!!!!!!!!!!!!! alignement des scores !!!!!!!!!!!!!!!!!!!!!!!!
+        fputs(" ", fptrScores);
+        fputs(pseudo, fptrScores);
+        fputs("\n", fptrScores);
 
+        writeLogs("Score saved");
     }
     fclose(fptrScores);
 }
 
-/** \brief registerPlayer - This function
+/** \brief registerPlayer - This function ask the player to enter a pseudo and check if it is correct according to the specified rules
  *
  *
  */
 void registerPlayer() {
     bool incorrect = 1;
+    char logPlayerName[35] = "Entered player name = ";
 
     do {
         printf("%s\n\nEntrez votre nom de joueur:\n"
@@ -151,6 +199,8 @@ void registerPlayer() {
             printf("\n/!\\ ENTREZ ENTRE 1 À 20 CARACTÈRES /!\\\n\n");
             incorrect = 1;
 
+            writeLogs("Player name's rule not followed (Length)");
+
         } else incorrect = 0;
 
         for (int i = 0; i < strlen(playerName); ++i) {
@@ -159,6 +209,8 @@ void registerPlayer() {
                 (playerName[i] < 97 || playerName[i] > 122)) {
                 printf("\n/!\\ UTILISEZ DES CHIFFRES ET/OU DES LETTRES SANS ACCENTS /!\\\n");
 
+                writeLogs("Player name's rule not followed (Special characters)");
+
                 incorrect = 1;
                 break;
             }
@@ -166,9 +218,10 @@ void registerPlayer() {
 
     } while (incorrect);
 
-    //fputs(, fptrLogs);
+    printf("\nEntered player name: %s\n", playerName);
 
-    printf("\nPlayer name: %s\n", playerName);
+    strcat(logPlayerName, playerName);
+    writeLogs(logPlayerName);
 }
 
 /** \brief showHelp - This function displays the explanation of the game to the user and wait for a specific input
@@ -177,6 +230,8 @@ void registerPlayer() {
  */
 void displayHelp() {
     choice = 0;
+
+    writeLogs("Game's help is displayed");
 
     do {
         printf("%s\n\n"
@@ -204,12 +259,17 @@ void displayHelp() {
 
         if (choice != 5) {
             printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n");
+
+            writeLogs("Wrong command used in the help menu");
         }
     } while (choice != 5);
+
+    writeLogs("Help menu closed");
 }
 
 /** \brief boatsEnd - This function changes the state of the grid when a ship is sunk: related (O)'s are replaced by (X)'s
  *
+ *\param boatNumber - boat that was sunk
  *
  */
 void boatsEnd(int boatNumber) {
@@ -227,71 +287,12 @@ void boatsEnd(int boatNumber) {
 
     numberOfBoats--;
 
-    return;
-    //Every cases of this switch is linked to a specific boat: 2 is for boat 2, 31 for boat31, etc.
-    switch (boatNumber) {
-        case 5:
-            for (int i = 0; i < 10; ++i) {
-                for (int j = 0; j < 10; ++j) {
-                    if (positions[i][j] == 5) {
-                        gameGrid[i][j] = 'X';
-                    }
-                }
-            }
-            --numberOfBoats;
-            score += SUNK;
-            break;
-        case 4:
-            for (int i = 0; i < 10; ++i) {
-                for (int j = 0; j < 10; ++j) {
-                    if (positions[i][j] == 4) {
-                        gameGrid[i][j] = 'X';
-                    }
-                }
-            }
-            --numberOfBoats;
-            score += SUNK;
-            break;
-        case 31:
-            for (int i = 0; i < 10; ++i) {
-                for (int j = 0; j < 10; ++j) {
-                    if (positions[i][j] == 31) {
-                        gameGrid[i][j] = 'X';
-                    }
-                }
-            }
-            --numberOfBoats;
-            score += SUNK;
-            break;
-        case 32:
-            for (int i = 0; i < 10; ++i) {
-                for (int j = 0; j < 10; ++j) {
-                    if (positions[i][j] == 32) {
-                        gameGrid[i][j] = 'X';
-                    }
-                }
-            }
-            --numberOfBoats;
-            score += SUNK;
-            break;
-        case 2:
-            for (int i = 0; i < 10; ++i) {
-                for (int j = 0; j < 10; ++j) {
-                    if (positions[i][j] == 2) {
-                        gameGrid[i][j] = 'X';
-                    }
-                }
-            }
-            --numberOfBoats;
-            score += 250;
-            break;
-        default:
-            printf("CE NAVIRE N'EXISTE PAS !!!\n");
-    }
+    writeLogs("Boat sunk");
 }
 
 /** \brief hitOrSink - This function calculates if a boat is hit or sunk: in the first case it replaces the (.)'s with (O)'s, in the second case it calls the boatEnd function
  *
+ * \param
  *
  */
 void hitOrSink(int vertical, int horizontal) {
@@ -305,6 +306,8 @@ void hitOrSink(int vertical, int horizontal) {
                 gameGrid[vertical][horizontal] = 'O';
                 score += HIT;
                 boat5Health--;
+
+                writeLogs("Boat 5 hit");
 
             } else {
                 boatsEnd(5);
@@ -320,6 +323,8 @@ void hitOrSink(int vertical, int horizontal) {
                 score += HIT;
                 boat4Health--;
 
+                writeLogs("Boat 4 hit");
+
             } else {
                 boatsEnd(4);
             }
@@ -333,6 +338,8 @@ void hitOrSink(int vertical, int horizontal) {
                 gameGrid[vertical][horizontal] = 'O';
                 score += HIT;
                 boat31Health--;
+
+                writeLogs("Boat 31 hit");
 
             } else {
                 boatsEnd(31);
@@ -348,6 +355,8 @@ void hitOrSink(int vertical, int horizontal) {
                 score += HIT;
                 boat32Health--;
 
+                writeLogs("Boat 32 hit");
+
             } else {
                 boatsEnd(32);
             }
@@ -362,18 +371,21 @@ void hitOrSink(int vertical, int horizontal) {
                 score += HIT;
                 boat2Health--;
 
+                writeLogs("Boat 2 hit");
+
             } else {
                 boatsEnd(2);
             }
             break;
         default:
             printf("\n/!\\ FATAL ERROR /!\\\n");
-
+            writeLogs("Error in function hitOrSink");
     }
 }
 
 /** \brief hitOrMiss - This function calculates if a boat is hit or not, or if the coordinates were already entered
  *
+ *\param vertical - vertical coordinate entered by the player, horizontal - horizontal coordinate entered by the player
  *
  */
 void hitOrMiss(char vertical, int horizontal) {
@@ -397,10 +409,14 @@ void hitOrMiss(char vertical, int horizontal) {
 
             gameGrid[verticalIndex][horizontalIndex] = '~';
             score += MISSED;
+
+            writeLogs("Missed shot");
         }
     } else {
         printf("/!\\ COORDONNÉE DÉJÀ ENTRÉE /!\\\n\n");
         score += OLDCOORDINATE;
+
+        writeLogs("Coordinates were already entered");
     }
 }
 
@@ -410,6 +426,8 @@ void hitOrMiss(char vertical, int horizontal) {
  */
 void game() {
     choice = 0;
+    char coordinates[3] = "";
+    int tempVertical = 0;
 
     //fptr stands for filePointer
     FILE *fptrChosenGrid = NULL;
@@ -421,20 +439,26 @@ void game() {
     switch (randomNumber) {
         case 1:
             fptrChosenGrid = fopen("data/grids/grid1.txt", "r");
+
+            writeLogs("File grid1 opened");
             break;
         case 2:
-            fptrChosenGrid = fopen("data/grids/grid2.txt", "r");;
+            fptrChosenGrid = fopen("data/grids/grid2.txt", "r");
+            writeLogs("File grid2 opened");
             break;
         case 3:
-            fptrChosenGrid = fopen("data/grids/grid3.txt", "r");;
+            fptrChosenGrid = fopen("data/grids/grid3.txt", "r");
+            writeLogs("File grid3 opened");
             break;
         default:
             printf("/!\\ ERREUR INATTENDUE /!\\\n");
+            writeLogs("Random number out of range for the game grid selection");
     }
 
     if (fptrChosenGrid == NULL) {
         printf("\n/!\\ ERREUR LORS DU CHARGEMENT DE LA GRILLE DE JEU /!\\\n");
 
+        writeLogs("No game grid found");
         return;
 
     } else {
@@ -456,6 +480,7 @@ void game() {
         fclose(fptrChosenGrid);
 
         printf("\n/!\\ CHARGEMENT DE LA GRILLE RÉUSSI /!\\\n");
+        writeLogs("Game grid fully loaded");
     }
 
     //Initialization of the score variable
@@ -521,22 +546,40 @@ void game() {
             //If an uppercase letter is entered it is changed to a lowercase one, ASCII table: a is 97 and A is 65 --> 97 - 65 = 32
             if (verticalCoordinate >= 65 && verticalCoordinate <= 74) {
                 verticalCoordinate = verticalCoordinate + 32;
+                writeLogs("Uppercase letter entered for vertical coordinate");
+            }
+
+            if (verticalCoordinate < 97 || verticalCoordinate > 106) {
+                printf("\n/!\\ UTILISEZ LES LETTRES ALLANT DE 'A' à 'j' /!\\\n");
+                writeLogs("Wrong command used (vertical coordinate)");
             }
 
             emptyBuffer();
+
             //ASCII table: a = 97 and j = 106
         } while (verticalCoordinate < 97 || verticalCoordinate > 106);
+
+        coordinates[0] = verticalCoordinate;
 
         do {
             printf("Veuillez entrer une coordonnée horizontale (1-10):\n");
             scanf("%d", &horizontalCoordinate);
 
+            if (horizontalCoordinate < 1 || horizontalCoordinate > 10) {
+                printf("\n /!\\ UTILISEZ LES TOUCHES ALLANT DE 1 À 10 /!\\\n");
+                writeLogs("Wrong command used (horizontal coordinate)");
+            }
+
             emptyBuffer();
 
-        } while ((horizontalCoordinate < 1 || horizontalCoordinate > 10));
+        } while (horizontalCoordinate < 1 || horizontalCoordinate > 10);
 
+        //48 is the ASCII value for 0
+        tempVertical = horizontalCoordinate + 48;
+        coordinates[1] = (char)tempVertical;
 
-        printf("\nCase choisie: %c%d\n\n", verticalCoordinate, horizontalCoordinate);
+        printf("\nCase choisie: %s\n\n", coordinates);
+
 
         hitOrMiss(verticalCoordinate, horizontalCoordinate);
     } while (numberOfBoats != 0);
@@ -547,6 +590,7 @@ void game() {
            "Score : %d\n", score);
 
     writeScore(playerName, score);
+    writeLogs("Game won");
 
     do {
         printf("%s\n"
@@ -560,6 +604,8 @@ void game() {
         if (choice != 4 && choice != 5) {
             printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n\n"
                    "%s\n\n", splitLine);
+
+            writeLogs("Wrong command used in the ''after win'' menu");
         }
     } while (choice != 4 && choice != 5);
 
@@ -584,6 +630,8 @@ void mainMenu() {
 
         scanf("%d", &choice);
 
+        writeLogs("Main menu is displayed");
+
         emptyBuffer();
 
         switch (choice) {
@@ -601,6 +649,7 @@ void mainMenu() {
                 system("exit");
                 break;
             default:
+                writeLogs("Wrong command used in the main menu");
                 printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n\n");
         }
     } while (choice != 1 && choice != 2 && choice != 3 && choice != 4);
@@ -613,25 +662,15 @@ void mainMenu() {
 int main() {
     SetConsoleOutputCP(CP_UTF8);
 
-    fptrLogs = fopen("data/logs.txt", "a");
-    
-    timer = time(NULL);
-    tm_info = localtime(&timer);
-    strftime(timeBuffer, 75, "%d-%m-%Y %H:%M:%S", tm_info);
-    fputs(strcat(timeBuffer, "  Program launched\n"), fptrLogs);
+    writeLogs("Program launched");
 
     while (choice != 4) {
         mainMenu();
     }
 
-    timer = time(NULL);
-    tm_info = localtime(&timer);
-    strftime(timeBuffer, 75, "%d-%m-%Y %H:%M:%S", tm_info);
-    fputs(strcat(timeBuffer, "  Program closed\n\n"), fptrLogs);
-
-    fclose(fptrLogs);
-
+    writeLogs("Program closed");
     system("pause");
 
     return 0;
 }
+
