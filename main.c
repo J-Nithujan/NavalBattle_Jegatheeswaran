@@ -2,7 +2,7 @@
  * \file      main.c
  * \author    Nithujan Jegatheeswaran
  * \version   1.0
- * \date      21.01.21
+ * \date      22.01.21
  * \brief     A battleship game
  *
  * \details    The game is made to be played in Windows' command prompt and has only 3 different game grids.
@@ -54,9 +54,9 @@ const int OLDCOORDINATE = -75;
 /**\brief Const used for the score*/
 const int SUNK = 250;
 
-/**\brief Graphical split line*/
+/**\brief Graphical split line used in the game*/
 const char splitLine[75] = "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ";
-/**\brief Graphical split line*/
+/**\brief Graphical split line used in the logs*/
 const char logSplitLine[75] = "-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-\n";
 
 /**\brief Name entered by the player*/
@@ -93,21 +93,23 @@ void writeLogs(char log[200]) {
 
     fptrLogs = fopen("data/logs.txt", "a");
 
-    //It is to "log" how the program is closed, by menus or by closing the window
+    //It is to know how the program is closed, by menus there will be 2 line and by closing the window there will be 1 lines
     if (!strcmp(log, "Program launched")){
         fputs(logSplitLine, fptrLogs);
     }
 
+    //I take the current time and date and save it with a specific format
     timer = time(NULL);
     tm_info = localtime(&timer);
     strftime(timeBuffer, 75, "%d-%m-%Y / %H:%M:%S", tm_info);
     fputs(timeBuffer, fptrLogs);
 
+    //Used to separate date/time and logged sentences
     fputs(": ", fptrLogs);
     fputs(log, fptrLogs);
     fputs("\n", fptrLogs);
 
-    //It is to "log" how the program is closed, by menus or by closing the window
+    //It is to know how the program is closed, by menus there will be 2 line and by closing the window there will be 1 lines
     if (!strcmp(log, "Program closed")){
         fputs(logSplitLine, fptrLogs);
     }
@@ -124,15 +126,17 @@ void showScores() {
     fptrScores = fopen("data/scores.txt", "r");
 
     fseek(fptrScores, 0, SEEK_END);
+    //I use the pointer's position to know whether the file is empty or not (if it exists)
     unsigned long length = ftell(fptrScores);
     fseek(fptrScores, 0, SEEK_SET);
 
     if (fptrScores == NULL) {
-        printf("\n/!\\ ERREUR LORS DU CHARGEMENT DES SCORES /!\\\n");
+        printf("\n/!\\ ERREUR LORS DU CHARGEMENT DES SCORES /!\\\n\n");
 
         writeLogs("Scores' file not found");
 
     } else if (length == 0) {
+        //Needed for the first player
         printf("\n/!\\ PAS DE SCORES À AFFICHER, SOYEZ LE PREMIER /!\\\n\n");
 
         writeLogs("Scores are displayed");
@@ -146,7 +150,8 @@ void showScores() {
             printf("%s", dataToBeRead);
         }
         printf("\n\n");
-        writeLogs("Scores' are displayed");
+
+        writeLogs("Scores are displayed");
     }
     fclose(fptrScores);
 }
@@ -158,24 +163,33 @@ void showScores() {
  *
  */
 void writeScore(char pseudo[], int scoreInt) {
-    char scoreChar[10] = "";
-    sprintf(scoreChar, "%d", scoreInt);
+    char scoreChar[5] = "";
+    unsigned int scoreLength = 0;
 
-    fptrScores = fopen("scores.txt", "a");
+    fptrScores = fopen("data/scores.txt", "a");
 
     if (fptrScores == NULL) {
-        printf("\n/!\\ ERREUR LORS DE L'ENREGISTREMENT DES SCORES /!\\\n");
+        printf("\n/!\\ ERREUR LORS DE L'ENREGISTREMENT DES SCORES /!\\\n\n");
 
         writeLogs("'scores.txt' file not found");
         return;
     } else {
-        printf("\nScore sauvegardé\n");
+        sprintf(scoreChar, "%d", scoreInt);
+        fputs(scoreChar, fptrScores);
 
-        fputs(scoreChar, fptrScores); //!!!!!!!!!!!!!!!!!!! alignement des scores !!!!!!!!!!!!!!!!!!!!!!!!
-        fputs(" ", fptrScores);
+        //Space between the scores and the ???????????????????
+        scoreLength = strlen(scoreChar);
+        char space[5] = "";
+        while (8 - scoreLength >0) {
+            strcat(space, " ");
+            scoreLength++;
+        }
+        fputs(space, fptrScores);
+
         fputs(pseudo, fptrScores);
         fputs("\n", fptrScores);
 
+        printf("\nScore sauvegardé\n");
         writeLogs("Score saved");
     }
     fclose(fptrScores);
@@ -207,7 +221,7 @@ void registerPlayer() {
             //The numbers 0-9 are represented, in the ASCII table, by numbers going from 48 to 57, letters A-Z by 65-90 and a-z by 97-122
             if ((playerName[i] < 48 || playerName[i] > 57) && (playerName[i] < 65 || playerName[i] > 90) &&
                 (playerName[i] < 97 || playerName[i] > 122)) {
-                printf("\n/!\\ UTILISEZ DES CHIFFRES ET/OU DES LETTRES SANS ACCENTS /!\\\n");
+                printf("\n/!\\ UTILISEZ DES CHIFFRES ET/OU DES LETTRES SANS ACCENTS /!\\\n\n");
 
                 writeLogs("Player name's rule not followed (Special characters)");
 
@@ -258,7 +272,7 @@ void displayHelp() {
         emptyBuffer();
 
         if (choice != 5) {
-            printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n");
+            printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n\n");
 
             writeLogs("Wrong command used in the help menu");
         }
@@ -286,6 +300,7 @@ void boatsEnd(int boatNumber) {
     }
 
     numberOfBoats--;
+    score += SUNK;
 
     writeLogs("Boat sunk");
 }
@@ -378,7 +393,7 @@ void hitOrSink(int vertical, int horizontal) {
             }
             break;
         default:
-            printf("\n/!\\ FATAL ERROR /!\\\n");
+            printf("\n/!\\ FATAL ERROR /!\\\n\n");
             writeLogs("Error in function hitOrSink");
     }
 }
@@ -451,12 +466,12 @@ void game() {
             writeLogs("File grid3 opened");
             break;
         default:
-            printf("/!\\ ERREUR INATTENDUE /!\\\n");
-            writeLogs("Random number out of range for the game grid selection");
+            printf("/!\\ ERREUR INATTENDUE /!\\\n\n");
+            writeLogs("Random number out of range for the game grid's selection");
     }
 
     if (fptrChosenGrid == NULL) {
-        printf("\n/!\\ ERREUR LORS DU CHARGEMENT DE LA GRILLE DE JEU /!\\\n");
+        printf("\n/!\\ ERREUR LORS DU CHARGEMENT DE LA GRILLE DE JEU /!\\\n\n");
 
         writeLogs("No game grid found");
         return;
@@ -471,6 +486,7 @@ void game() {
             positions[count1][count2] = data;
             count2++;
 
+            //This "if" helps working with the "positions" table
             if (count2 == 10) {
                 count2 = 0;
                 count1++;
@@ -479,7 +495,7 @@ void game() {
 
         fclose(fptrChosenGrid);
 
-        printf("\n/!\\ CHARGEMENT DE LA GRILLE RÉUSSI /!\\\n");
+        printf("\n/!\\ CHARGEMENT DE LA GRILLE RÉUSSI /!\\\n\n");
         writeLogs("Game grid fully loaded");
     }
 
@@ -505,6 +521,9 @@ void game() {
     }
 
     do {
+        //Initialized in the do...while because I use a strcat with this string variable
+        char coordinatesLog[30] = "Selected coordinates: ";
+
         //Initialization of the grid's headers
         int horizontalHeader[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
         char verticalHeader[10] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
@@ -549,8 +568,10 @@ void game() {
                 writeLogs("Uppercase letter entered for vertical coordinate");
             }
 
+
             if (verticalCoordinate < 97 || verticalCoordinate > 106) {
-                printf("\n/!\\ UTILISEZ LES LETTRES ALLANT DE 'A' à 'j' /!\\\n");
+                //Error message for the player
+                printf("\n/!\\ UTILISEZ LES LETTRES ALLANT DE 'A' à 'j' /!\\\n\n");
                 writeLogs("Wrong command used (vertical coordinate)");
             }
 
@@ -566,7 +587,8 @@ void game() {
             scanf("%d", &horizontalCoordinate);
 
             if (horizontalCoordinate < 1 || horizontalCoordinate > 10) {
-                printf("\n /!\\ UTILISEZ LES TOUCHES ALLANT DE 1 À 10 /!\\\n");
+                //Error message for the player
+                printf("\n /!\\ UTILISEZ LES TOUCHES ALLANT DE 1 À 10 /!\\\n\n");
                 writeLogs("Wrong command used (horizontal coordinate)");
             }
 
@@ -580,6 +602,8 @@ void game() {
 
         printf("\nCase choisie: %s\n\n", coordinates);
 
+        strcat(coordinatesLog,coordinates);
+        writeLogs(coordinatesLog);
 
         hitOrMiss(verticalCoordinate, horizontalCoordinate);
     } while (numberOfBoats != 0);
@@ -589,8 +613,8 @@ void game() {
            "############\n\n"
            "Score : %d\n", score);
 
-    writeScore(playerName, score);
     writeLogs("Game won");
+    writeScore(playerName, score);
 
     do {
         printf("%s\n"
@@ -602,6 +626,7 @@ void game() {
         emptyBuffer();
 
         if (choice != 4 && choice != 5) {
+            //Error message for the player
             printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n\n"
                    "%s\n\n", splitLine);
 
@@ -649,6 +674,7 @@ void mainMenu() {
                 system("exit");
                 break;
             default:
+                //Error message for the player
                 writeLogs("Wrong command used in the main menu");
                 printf("\n/!\\ UTILISEZ LES TOUCHES AFFICHÉES POUR VOUS DÉPLACER /!\\\n\n");
         }
