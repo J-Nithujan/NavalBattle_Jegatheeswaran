@@ -2,7 +2,7 @@
  * \file      main.c
  * \author    Nithujan Jegatheeswaran
  * \version   1.0
- * \date      22.01.21
+ * \date      23.01.21
  * \brief     A battleship game
  *
  * \details    The game is made to be played in Windows' command prompt and has only 3 different game grids.
@@ -48,11 +48,11 @@ int score = 0;
 /**\brief Const used for the score*/
 const int HIT = 100;
 /**\brief Const used for the score*/
-const int MISSED = -50;
+const int MISSED = -75;
 /**\brief Const used for the score*/
-const int OLDCOORDINATE = -75;
+const int OLD_COORDINATE = -100;
 /**\brief Const used for the score*/
-const int SUNK = 250;
+const int SUNK = 200;
 
 /**\brief Graphical split line used in the game*/
 const char splitLine[75] = "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ";
@@ -62,9 +62,9 @@ const char logSplitLine[75] = "-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
 /**\brief Name entered by the player*/
 char playerName[20] = "";
 
-/**\brief Pointer used for the logs .txt file*/
+/**\brief Pointer used for the "logs.txt" file*/
 FILE *fptrLogs; //fptr stands for filePointer
-/**\brief Pointer used for the scores .txt file*/
+/**\brief Pointer used for the "scores.txt" file*/
 FILE *fptrScores; //fptr stands for filePointer
 
 /*Functions*/
@@ -93,8 +93,8 @@ void writeLogs(char log[200]) {
 
     fptrLogs = fopen("data/logs.txt", "a");
 
-    //It is to know how the program is closed, by menus there will be 2 line and by closing the window there will be 1 lines
-    if (!strcmp(log, "Program launched")){
+    //It is to know how the program is closed, by menus there will be 2 lines and by closing the window there will be 1 line
+    if (!strcmp(log, "Program launched")) {
         fputs(logSplitLine, fptrLogs);
     }
 
@@ -104,13 +104,13 @@ void writeLogs(char log[200]) {
     strftime(timeBuffer, 75, "%d-%m-%Y / %H:%M:%S", tm_info);
     fputs(timeBuffer, fptrLogs);
 
-    //Used to separate date/time and logged sentences
+    //Used to separate date/time and logged sentence
     fputs(": ", fptrLogs);
     fputs(log, fptrLogs);
     fputs("\n", fptrLogs);
 
-    //It is to know how the program is closed, by menus there will be 2 line and by closing the window there will be 1 lines
-    if (!strcmp(log, "Program closed")){
+    //It is to know how the program is closed, by menus there will be 2 lines and by closing the window there will be 1 line
+    if (!strcmp(log, "Program closed")) {
         fputs(logSplitLine, fptrLogs);
     }
 
@@ -123,10 +123,11 @@ void writeLogs(char log[200]) {
  */
 void showScores() {
     char dataToBeRead[100] = "";
+
     fptrScores = fopen("data/scores.txt", "r");
 
+    //I put the pointer at the end of the file to know whether it is empty or not (if it exists)
     fseek(fptrScores, 0, SEEK_END);
-    //I use the pointer's position to know whether the file is empty or not (if it exists)
     unsigned long length = ftell(fptrScores);
     fseek(fptrScores, 0, SEEK_SET);
 
@@ -149,7 +150,7 @@ void showScores() {
         while (fgets(dataToBeRead, 100, fptrScores) != NULL) {
             printf("%s", dataToBeRead);
         }
-        printf("\n\n");
+        printf("\n");
 
         writeLogs("Scores are displayed");
     }
@@ -159,7 +160,8 @@ void showScores() {
 
 /** \brief writeScores - This function write the player's score at the end of a game
  *
- * \param pseudo -  name entered by the player, scoreInt - The player's score at the end of the game
+ * \param pseudo -  name entered by the player
+ * \param scoreInt - The player's score at the end of the game
  *
  */
 void writeScore(char pseudo[], int scoreInt) {
@@ -175,12 +177,20 @@ void writeScore(char pseudo[], int scoreInt) {
         return;
     } else {
         sprintf(scoreChar, "%d", scoreInt);
-        fputs(scoreChar, fptrScores);
 
-        //Space between the scores and the ???????????????????
-        scoreLength = strlen(scoreChar);
+        if (scoreInt > 0) {
+            //There is no "-" symbol in front of positive scores so I put a space before to align them with negative scores
+            fputs(" ", fptrScores);
+            fputs(scoreChar, fptrScores);
+            scoreLength++;
+        } else {
+            fputs(scoreChar, fptrScores);
+        }
+
+        scoreLength += strlen(scoreChar);
         char space[5] = "";
-        while (8 - scoreLength >0) {
+        //Every player name is placed at 9 spaces from the left side (margin)
+        while (8 - scoreLength > 0) {
             strcat(space, " ");
             scoreLength++;
         }
@@ -205,7 +215,7 @@ void registerPlayer() {
 
     do {
         printf("%s\n\nEntrez votre nom de joueur:\n"
-               "(Il peut contenir entre 1 et 20 lettres et/ou chiffres sans accents)\n",
+               "(Il peut contenir entre 1 et 20 lettres et/ou chiffres sans accents ni espace)\n",
                splitLine);
         gets(playerName);
 
@@ -221,7 +231,7 @@ void registerPlayer() {
             //The numbers 0-9 are represented, in the ASCII table, by numbers going from 48 to 57, letters A-Z by 65-90 and a-z by 97-122
             if ((playerName[i] < 48 || playerName[i] > 57) && (playerName[i] < 65 || playerName[i] > 90) &&
                 (playerName[i] < 97 || playerName[i] > 122)) {
-                printf("\n/!\\ UTILISEZ DES CHIFFRES ET/OU DES LETTRES SANS ACCENTS /!\\\n\n");
+                printf("\n/!\\ N'UTILISEZ QUE DES CHIFFRES ET/OU DES LETTRES SANS ACCENTS, SANS ESPACE/!\\\n\n");
 
                 writeLogs("Player name's rule not followed (Special characters)");
 
@@ -253,17 +263,18 @@ void displayHelp() {
                "#############\n\n"
                "Le but du jeu est de couler tous les navires cachés dans une grille.\n"
                "Pour faire cela il faut tirer sur une des cases de la grille en indiquant une coordonnée.\n"
-               "Répétez cette opération jusqu'à ce que tous les navires soient coulés\n\n"
+               "Répétez cette opération jusqu'à ce que tous les navires soient coulés\n"
+               "ATTENTION: en dessous de 1000pts la partie se termine\n\n"
                "Score:\n"
                "------\n"
-               "Raté: -50pts | Touché: 100pts | Touché-coulé: 250pts | Déjà tiré: -75pts\n\n"
+               "Raté: -50pts | Touché: 100pts | Touché-coulé: 200pts | Déjà tiré: -100pts\n\n"
                "État des cases:\n"
                "---------------\n"
                "Case inconnue: (.)\n"
                "Ratée: (~)\n"
                "Touchée: (O)\n"
                "Coulée: (X)\n"
-               "Conseil: pour un meilleur confort visuel, jouez avec la fenêtre en pleine écran\n\n"
+               "Conseil: pour un meilleur confort visuel, jouez avec la fenêtre en plein écran\n\n"
                "%s\nRetour au Menu principal (5)\n%s\n",        //buttons 1, 2, 3 and 4 are already used for new game, help, scores and quit in mainMenu
                splitLine, splitLine, splitLine);
 
@@ -307,16 +318,17 @@ void boatsEnd(int boatNumber) {
 
 /** \brief hitOrSink - This function calculates if a boat is hit or sunk: in the first case it replaces the (.)'s with (O)'s, in the second case it calls the boatEnd function
  *
- * \param
+ * \param vertical - vertical coordinate converted to a grid index (0-9)
+ * \param horizontal - horizontal coordinate converted to a grid index (0-9)
  *
  */
 void hitOrSink(int vertical, int horizontal) {
     switch (positions[vertical][horizontal]) {
         case 5:
             if (boat5Health) {
-                printf("########\n"
-                       "TOUCHÉ !\n"
-                       "########\n\n");
+                printf("##########\n"
+                       " TOUCHÉ !\n"
+                       "##########\n\n");
 
                 gameGrid[vertical][horizontal] = 'O';
                 score += HIT;
@@ -330,9 +342,9 @@ void hitOrSink(int vertical, int horizontal) {
             break;
         case 4:
             if (boat4Health) {
-                printf("########\n"
-                       "TOUCHÉ !\n"
-                       "########\n\n");
+                printf("#########\n"
+                       " TOUCHÉ !\n"
+                       "#########\n\n");
 
                 gameGrid[vertical][horizontal] = 'O';
                 score += HIT;
@@ -346,9 +358,9 @@ void hitOrSink(int vertical, int horizontal) {
             break;
         case 31:
             if (boat31Health) {
-                printf("########\n"
-                       "TOUCHÉ !\n"
-                       "########\n\n");
+                printf("##########\n"
+                       " TOUCHÉ !\n"
+                       "##########\n\n");
 
                 gameGrid[vertical][horizontal] = 'O';
                 score += HIT;
@@ -362,9 +374,9 @@ void hitOrSink(int vertical, int horizontal) {
             break;
         case 32:
             if (boat32Health) {
-                printf("########\n"
-                       "TOUCHÉ !\n"
-                       "########\n\n");
+                printf("##########\n"
+                       " TOUCHÉ !\n"
+                       "##########\n\n");
 
                 gameGrid[vertical][horizontal] = 'O';
                 score += HIT;
@@ -378,9 +390,9 @@ void hitOrSink(int vertical, int horizontal) {
             break;
         case 2:
             if (boat2Health) {
-                printf("########\n"
-                       "TOUCHÉ !\n"
-                       "########\n\n");
+                printf("##########\n"
+                       " TOUCHÉ !\n"
+                       "##########\n\n");
 
                 gameGrid[vertical][horizontal] = 'O';
                 score += HIT;
@@ -400,7 +412,8 @@ void hitOrSink(int vertical, int horizontal) {
 
 /** \brief hitOrMiss - This function calculates if a boat is hit or not, or if the coordinates were already entered
  *
- *\param vertical - vertical coordinate entered by the player, horizontal - horizontal coordinate entered by the player
+ *\param vertical - vertical coordinate entered by the player (a-j)
+ * \param horizontal - horizontal coordinate entered by the player (1-10)
  *
  */
 void hitOrMiss(char vertical, int horizontal) {
@@ -418,9 +431,9 @@ void hitOrMiss(char vertical, int horizontal) {
 
             return;
         } else {
-            printf("######\n"
-                   "PLOUF!\n"
-                   "######\n\n");
+            printf("########\n"
+                   " PLOUF!\n"
+                   "########\n\n");
 
             gameGrid[verticalIndex][horizontalIndex] = '~';
             score += MISSED;
@@ -429,7 +442,7 @@ void hitOrMiss(char vertical, int horizontal) {
         }
     } else {
         printf("/!\\ COORDONNÉE DÉJÀ ENTRÉE /!\\\n\n");
-        score += OLDCOORDINATE;
+        score += OLD_COORDINATE;
 
         writeLogs("Coordinates were already entered");
     }
@@ -598,19 +611,29 @@ void game() {
 
         //48 is the ASCII value for 0
         tempVertical = horizontalCoordinate + 48;
-        coordinates[1] = (char)tempVertical;
+        coordinates[1] = (char) tempVertical;
 
         printf("\nCase choisie: %s\n\n", coordinates);
 
-        strcat(coordinatesLog,coordinates);
+        strcat(coordinatesLog, coordinates);
         writeLogs(coordinatesLog);
 
         hitOrMiss(verticalCoordinate, horizontalCoordinate);
+
+        if (score <= -1000) {
+            printf("###############\n"
+                   " GAME OVER ...\n"
+                   "###############\n\n");
+            writeLogs("Game over: score below -1000pts");
+
+            return;
+        }
+
     } while (numberOfBoats != 0);
 
-    printf("############\n"
-           "VICTOIRE !!!\n"
-           "############\n\n"
+    printf("##############\n"
+           " VICTOIRE !!!\n"
+           "##############\n\n"
            "Score : %d\n", score);
 
     writeLogs("Game won");

@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['verticalindex_56',['verticalIndex',['../main_8c.html#ab6247c2ba0edf92390332929f983efd4',1,'main.c']]]
+  ['playername_61',['playerName',['../main_8c.html#aaa65da7274af1e4870dfeb42e2ec4986',1,'main.c']]],
+  ['positions_62',['positions',['../main_8c.html#a18578e4bc064068a1c754bc978bf6f5d',1,'main.c']]]
 ];
